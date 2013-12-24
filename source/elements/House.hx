@@ -50,7 +50,7 @@ class House extends FlxSprite
 		}
 		_w.ground.groundMap.dirty = true;
 		_w.ground.groundMap.resetFrameBitmapDatas();
-		_paint = COLOR_PAINT[FlxRandom.intRanged(0, COLOR_TRUNK.length)];
+		_paint = COLOR_PAINT[FlxRandom.intRanged(0, COLOR_TRUNK.length-1)];
 	}
 	
 	public function build(Value:Int):Void
@@ -67,7 +67,7 @@ class House extends FlxSprite
 		{
 			if (i <= 25)
 			{
-				color = COLOR_TRUNK[FlxRandom.intRanged(0, COLOR_TRUNK.length)];
+				color = COLOR_TRUNK[FlxRandom.intRanged(0, COLOR_TRUNK.length-1)];
 				pY = Std.int(i / 5);
 				pX = Std.int(i % 5);
 				if (pX == 2 && pY < 2)

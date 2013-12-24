@@ -21,7 +21,7 @@ class Smoke extends FlxSprite
 		super.reset(X, Y);
 		alpha = 1;
 		var size:Int = FlxRandom.intRanged(1, 3);
-		makeGraphic(size, size, COLOR_SMOKE[FlxRandom.intRanged(0, COLOR_SMOKE.length)]);
+		makeGraphic(size, size, COLOR_SMOKE[FlxRandom.intRanged(0, COLOR_SMOKE.length-1)]);
 		velocity.y = -3;
 		velocity.x = 6 * ( -1 * FlxRandom.floatRanged(0.8, 1.2));
 		

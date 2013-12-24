@@ -294,7 +294,7 @@ class Guy
 						
 					}
 					
-					_action = acts[FlxRandom.intRanged(0, acts.length)];
+					_action = acts[FlxRandom.intRanged(0, acts.length-1)];
 					
 					switch(_action)
 					{
@@ -434,7 +434,7 @@ class Guy
 										
 					if (mDirs.length > 0)
 					{
-						_digDir = mDirs[FlxRandom.intRanged(0, mDirs.length)];
+						_digDir = mDirs[FlxRandom.intRanged(0, mDirs.length-1)];
 					}
 				}
 				

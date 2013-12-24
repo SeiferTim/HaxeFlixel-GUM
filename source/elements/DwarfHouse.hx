@@ -32,7 +32,7 @@ class DwarfHouse extends FlxSprite
 		_birthing = false;
 		_delay = 0;
 		COLOR_WALL = FlxGradient.createGradientArray(10, 10, [0xFFBA8C00, 0xFFF5E16E]);
-		_paint = COLOR_WALL[FlxRandom.intRanged(0, COLOR_WALL.length)];
+		_paint = COLOR_WALL[FlxRandom.intRanged(0, COLOR_WALL.length-1)];
 		for (i in Std.int(x - 1)...Std.int(x + width + 1))
 		{
 			for (j in Std.int(y - 1)...Std.int(y + height + 1))
@@ -53,7 +53,7 @@ class DwarfHouse extends FlxSprite
 		{
 			if (i <= 25)
 			{
-				color = COLOR_WALL[FlxRandom.intRanged(0, COLOR_WALL.length)];
+				color = COLOR_WALL[FlxRandom.intRanged(0, COLOR_WALL.length-1)];
 				pX = i % 5;
 				pY = Std.int(i / 5);
 				if (pX >= 1 && pX <= 3 && pY < 2)

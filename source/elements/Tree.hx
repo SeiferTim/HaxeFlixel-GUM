@@ -46,7 +46,7 @@ class Tree extends FlxSprite
 		var density:Float = FlxRandom.floatRanged(0.7, 0.9);
 		
 		var canvas:BitmapData = new BitmapData((tWidth * 2) + 1, tHeight + 2, true, 0x00000000);
-		var tColor:Int = COLOR_TRUNK[FlxRandom.intRanged(0, COLOR_TRUNK.length)];
+		var tColor:Int = COLOR_TRUNK[FlxRandom.intRanged(0, COLOR_TRUNK.length-1)];
 		
 		health = lHeight * 20;
 		_status = STATUS_NORMAL;
@@ -68,7 +68,7 @@ class Tree extends FlxSprite
 				//{
 					if (FlxRandom.chanceRoll(Std.int(density*100)))
 					{
-						canvas.setPixel32(ax, i, COLOR_LEAF[FlxRandom.intRanged(0, COLOR_LEAF.length)]);
+						canvas.setPixel32(ax, i, COLOR_LEAF[FlxRandom.intRanged(0, COLOR_LEAF.length-1)]);
 					}
 				//}
 			}

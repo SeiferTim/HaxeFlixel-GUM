@@ -46,7 +46,7 @@ class Ground
 	{
 		if (Amt < 0) return;
 		for (i in _points[X] - Amt..._points[X])
-			_groundMap.pixels.setPixel32(X, i, COLOR_DIRT[FlxRandom.intRanged(0,COLOR_DIRT.length)]);
+			_groundMap.pixels.setPixel32(X, i, COLOR_DIRT[FlxRandom.intRanged(0,COLOR_DIRT.length-1)]);
 		_points[X] -= Amt;
 		groundMap.dirty = true;
 		_groundMap.resetFrameBitmapDatas();

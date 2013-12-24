@@ -1,11 +1,13 @@
 package elements;
 import flash.display.BitmapData;
+import flash.display.BlendMode;
 import flash.geom.Rectangle;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.util.FlxColorUtil;
 import flixel.util.FlxGradient;
+import flixel.util.FlxMath;
 import flixel.util.FlxRandom;
 
 class World
@@ -37,6 +39,7 @@ class World
 	private var _lyrMagma:FlxSprite;
 	private var _dRooms:FlxSprite;
 	
+	
 	private var COLOR_CMID:Array<Int>;
 	private var COLOR_DIRT:Array<Int>;
 	
@@ -49,6 +52,8 @@ class World
 	private var _dwarfPop:Int;
 	
 	private var _gs:PlayState;
+	
+	
 	
 
 	public function new(GS:PlayState) 
@@ -73,6 +78,12 @@ class World
 		_lyrMagma = _magma.mSpr;
 		_dwarfFood = 2000;
 		_dwarfOre = 0;
+		
+		
+		
+		
+		
+		
 		
 	}
 	
@@ -152,8 +163,12 @@ class World
 		var rY:Int;
 		var hasM:Bool;
 		var checks:Int;
+		var dirX:Int;
+		var dirY:Int;
+		var chanceX:Int;
+		var chanceY:Int;
 		
-		for (cCnt in 0...FlxRandom.intRanged(10, 20))
+		for (cCnt in 0...FlxRandom.intRanged(10, 100))
 		{
 			cX = FlxRandom.intRanged(0,FlxG.width);
 			cY = FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10);
@@ -166,8 +181,11 @@ class World
 			for (cT in 0...FlxRandom.intRanged(200, 400))
 			{
 				MakeCave(rX, rY, CORIENT_P);
-				if (hasM)
+				if (hasM && FlxRandom.chanceRoll())
+				{
 					_magma.spawnMagma(rX, rY);
+				}
+				
 				checks = 0;
 				while (!isSolid(rX, rY) && checks < 100)
 				{
@@ -184,8 +202,90 @@ class World
 				}
 			}
 		}
-		_magma.update();
+		
+		for (cCnt in 0...3)//FlxRandom.intRanged(2, 10))
+		{
+			cX = FlxRandom.intRanged(0, FlxG.width);
+			drawCaveCrack(cX, FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10));
+		}
+		
+		for (l in 0...10)
+			_magma.update();
+
 		_caves.resetFrameBitmapDatas();
+	}
+	
+	private function drawCaveCrack(StartX:Int, StartY:Int, Level:Int = 0):Void
+	{
+			var rX:Int = StartX;
+			var rY:Int = StartY;
+			var dirX:Int = Std.int(FlxRandom.sign());
+			var dirY:Int = Std.int(FlxRandom.sign());
+			var chanceX:Int = FlxRandom.intRanged(10, 90);
+			var chanceY:Int = FlxRandom.intRanged(10, 90);
+			var checks:Int = 0;
+			var height:Int = 1;// FlxRandom.intRanged(1, 20 - Level);
+			var width:Int = 1;// FlxRandom.intRanged(1, 20 - Level);
+			var branchTicks:Int = 25 * Level;
+			
+			var loops:Int = FlxRandom.intRanged(10, 400);
+			
+			for (cT in 0...loops)
+			{
+				for (Y in rY-Std.int(Math.ceil(height/2))...rY+Std.int(Math.floor(height/2)))
+				{
+					for (X in rX-Std.int(Math.ceil(width/2))...rX+Std.int(Math.floor(width/2)))
+					{
+						if (X >= 0 && Y >= _ground.points[X] && Y <= FlxG.height && X <= FlxG.width)
+						{
+							if (isSolid(X, Y))
+							{
+								MakeCave(X, Y, CORIENT_P);
+								if (FlxRandom.chanceRoll(Std.int(((rY / 2) / FlxG.height) * 100)) && FlxRandom.chanceRoll(80))
+									_magma.spawnMagma(X, Y);
+								
+							}
+						}
+					}
+				}
+				if (branchTicks <= 0)
+				{
+					
+					if (FlxRandom.chanceRoll(Std.int(FlxMath.bound(5 - Level, 1, 5))))
+					{
+						if(FlxRandom.chanceRoll(30))
+						{
+							drawCaveCrack(rX, rY, Level + 1);
+							branchTicks = 25 * Level;
+						}
+						
+					}
+					
+				}
+				else
+					branchTicks--;
+				//checks = 0;
+				//while (!isSolid(rX, rY) && checks < 100)
+				//{
+				//	checks++;
+					if (FlxRandom.chanceRoll(chanceX))
+						rX += dirX;
+					if (FlxRandom.chanceRoll(chanceY))
+						rY += dirY;
+					
+					if (FlxRandom.chanceRoll(10))
+						width += Std.int(FlxRandom.sign());
+
+					width = Std.int(FlxMath.bound(width, 1, FlxMath.bound(10 - Level, 1, (loops - cT) / 4)));
+					
+					if (FlxRandom.chanceRoll(10))
+						height += Std.int(FlxRandom.sign());
+
+					height = Std.int(FlxMath.bound(height, 1, FlxMath.bound(10 - Level, 1, (loops - cT) / 4)));
+
+					
+				//}
+			}
 	}
 	
 	public function populateDwarfs():Void
@@ -283,114 +383,114 @@ class World
 				X -= 2;
 				Y += 1;
 				if (isSolid(X, Y) && _ground.points[X] < Y)
-					tmp.setPixel32(X, Y, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X, Y, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (_ground.points[X+1]< Y+0)
-					tmp.setPixel32(X + 1, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 1, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X+2]< Y+0)
-					tmp.setPixel32(X + 2, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 2, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X + 3] > Y + 0)
-					tmp.setPixel32(X + 3, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 3, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (isSolid(X + 4, Y) && _ground.points[X + 4] < Y + 0)
-					tmp.setPixel32(X + 4, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 4, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X, Y + 1) && _ground.points[X + 0] < Y + 1)
-					tmp.setPixel32(X + 0, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 1) && _ground.points[X + 1] < Y + 1)
-					tmp.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 2, Y + 1) && _ground.points[X + 2] < Y + 1)
-					tmp.setPixel32(X + 2, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 2, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 3, Y + 1) && _ground.points[X + 3] < Y + 1)
-					tmp.setPixel32(X + 3, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 3, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 4, Y + 1) && _ground.points[X + 4] < Y + 1)
-					tmp.setPixel32(X + 4, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 4, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 			case CORIENT_U:
 				X -= 2;
 				Y -= 1;
 				if (isSolid(X + 0, Y + 0) && _ground.points[X+0]< Y+0)
-					tmp.setPixel32(X + 0, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (_ground.points[X+1]< Y+0)
-					tmp.setPixel32(X + 1, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 1, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X+2]< Y+0)
-					tmp.setPixel32(X + 2, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 2, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X+3]< Y+0)
-					tmp.setPixel32(X + 3, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 3, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (isSolid(X + 4, Y + 0) && _ground.points[X+4]< Y+0)
-					tmp.setPixel32(X + 4, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 4, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 0, Y - 1) && _ground.points[X+0]< Y-1)
-					tmp.setPixel32(X + 0, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y - 1) && _ground.points[X+2]< Y-1)
-					tmp.setPixel32(X + 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 2, Y - 1) && _ground.points[X+3]< Y-1)
-					tmp.setPixel32(X + 2, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 2, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 3, Y - 1) && _ground.points[X+4]< Y-1)
-					tmp.setPixel32(X + 3, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 3, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 4, Y - 1) && _ground.points[X+5]< Y-1)
-					tmp.setPixel32(X + 4, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 4, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 			case CORIENT_R:
 				Y -= 2;
 				X += 1;
 				if (isSolid(X + 0, Y + 0) && _ground.points[X+0]< Y+0)
-					tmp.setPixel32(X + 0, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (_ground.points[X+0]< Y+1)
-					tmp.setPixel32(X + 0, Y + 1, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 0, Y + 1, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X+0]< Y+2)
-					tmp.setPixel32(X + 0, Y + 2, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 0, Y + 2, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X+0]< Y+3)
-					tmp.setPixel32(X + 0, Y + 3, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 0, Y + 3, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (isSolid(X + 0, Y + 4) && _ground.points[X+0]< Y+4)
-					tmp.setPixel32(X + 0, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 0) && _ground.points[X+1]< Y+0)
-					tmp.setPixel32(X + 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 1) && _ground.points[X+1]< Y+1)
-					tmp.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 2) && _ground.points[X+1]< Y+2)
-					tmp.setPixel32(X + 1, Y + 2, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 2, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 3) && _ground.points[X+1]< Y+3)
-					tmp.setPixel32(X + 1, Y + 3, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 3, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 4) && _ground.points[X+1]< Y+4)
-					tmp.setPixel32(X + 1, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 			case CORIENT_L:
 				Y -= 2;
 				X -= 1;
 				if (isSolid(X + 0, Y + 0) && _ground.points[X+0]< Y+0)
-					tmp.setPixel32(X + 0, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (_ground.points[X+0]< Y+1)
-					tmp.setPixel32(X + 0, Y + 1, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 0, Y + 1, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X+0]< Y+2)
-					tmp.setPixel32(X + 0, Y + 2, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 0, Y + 2, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (_ground.points[X+0]< Y+3)
-					tmp.setPixel32(X + 0, Y + 3, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 0, Y + 3, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (isSolid(X + 0, Y + 4) && _ground.points[X+0]< Y+4)
-					tmp.setPixel32(X + 0, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X - 1, Y + 0) && _ground.points[X+0]< Y+0)
-					tmp.setPixel32(X - 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X - 1, Y + 1)&& _ground.points[X-1]< Y+1)
-					tmp.setPixel32(X - 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X - 1, Y + 2)&& _ground.points[X-1]< Y+2)
-					tmp.setPixel32(X - 1, Y + 2, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y + 2, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X - 1, Y + 3)&& _ground.points[X-1]< Y+3)
-					tmp.setPixel32(X - 1, Y + 3, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y + 3, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X - 1, Y + 4)&& _ground.points[X-1]< Y+4)
-					tmp.setPixel32(X - 1, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 			case CORIENT_P:
 				// A cave in a specific point, for random caves mostly
 				if (_ground.points[X + 0] < Y + 0)
-					tmp.setPixel32(X + 0, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length)]);
+					tmp.setPixel32(X + 0, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
 				if (isSolid(X - 1, Y - 1) && _ground.points[X - 1] < Y - 1)
-					tmp.setPixel32(X - 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 0, Y - 1) && _ground.points[X +0] < Y - 1)
-					tmp.setPixel32(X + 0, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y - 1) && _ground.points[X + 1] < Y - 1)
-					tmp.setPixel32(X + 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X - 1, Y + 0) && _ground.points[X - 1] < Y + 0)
-					tmp.setPixel32(X - 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 0) && _ground.points[X + 1] < Y + 0)
-					tmp.setPixel32(X + 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X - 1, Y + 1) && _ground.points[X - 1] < Y + 1)
-					tmp.setPixel32(X - 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X - 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 0, Y + 1) && _ground.points[X + 0] < Y + 1)
-					tmp.setPixel32(X + 0, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 0, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 				if (isSolid(X + 1, Y + 1) && _ground.points[X + 1] < Y + 1)
-					tmp.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length)]);
+					tmp.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 		}
 		_caves.pixels = tmp;
 		_caves.dirty = true;

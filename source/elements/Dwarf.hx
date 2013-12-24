@@ -198,7 +198,7 @@ class Dwarf
 					}
 				}
 				
-				_action = acts[FlxRandom.intRanged(0, acts.length)];
+				_action = acts[FlxRandom.intRanged(0, acts.length-1)];
 				
 				switch(_action)
 				{

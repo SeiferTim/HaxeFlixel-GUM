@@ -35,6 +35,7 @@ class MenuState extends FlxState
 	
 	private function StartGame():Void
 	{
+		FlxG.mouse.hide();
 		FlxG.switchState(new PlayState());
 	}
 	
