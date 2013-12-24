@@ -141,9 +141,9 @@ class World
 	
 	public function populateCaves():Void
 	{
-		_caves = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, 0x0, true);
+		_caves = new FlxSprite(0, 0);// .makeGraphic(FlxG.width, FlxG.height, 0x0, true);
 		_caves.pixels = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
-		
+		_caves.dirty = true;
 		var cX:Int;
 		var cY:Int;
 		var rX:Int;
@@ -151,7 +151,7 @@ class World
 		var hasM:Bool;
 		var checks:Int;
 		
-		for (cCnt in 0...FlxRandom.intRanged(10, 100))
+		for (cCnt in 0...FlxRandom.intRanged(10, 20))
 		{
 			cX = FlxRandom.intRanged(0,FlxG.width);
 			cY = FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10);
@@ -161,13 +161,13 @@ class World
 			
 			hasM = FlxRandom.chanceRoll(Std.int(((rY / 2) / FlxG.height) * 100));
 			
-			for (cT in 0...FlxRandom.intRanged(200, 800))
+			for (cT in 0...FlxRandom.intRanged(200, 400))
 			{
 				MakeCave(rX, rY, CORIENT_P);
 				if (hasM)
 					_magma.spawnMagma(rX, rY);
 				checks = 0;
-				while (!isSolid(rX, rY) && checks < 1200)
+				while (!isSolid(rX, rY) && checks < 100)
 				{
 					checks++;
 					if (FlxRandom.chanceRoll(10))
@@ -231,7 +231,7 @@ class World
 	
 	public function populateHumans():Void
 	{
-		_lyrGuys = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, 0x0);
+		_lyrGuys = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, 0x0,true);
 		_guys = new Array<Guy>();
 		var pos:Int = FlxRandom.intRanged(20, FlxG.width - 20);
 		for (i in 0...FlxRandom.intRanged(4, 8))

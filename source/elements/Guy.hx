@@ -221,7 +221,8 @@ class Guy
 				}
 				var bX:Int=0;
 				var bY:Int=0;
-				var avg:Float=0;
+				var avg:Float = 0;
+				var tTree:Tree=null;
 				
 				if (_action == -1 || FlxRandom.chanceRoll(5))
 				{
@@ -285,6 +286,7 @@ class Guy
 								if (_pos.x > t.x && _pos.x < t.x + t.width)
 								{
 									acts.push(ACT_TREE);
+									tTree = t;
 									break;
 								}
 							}
@@ -297,8 +299,11 @@ class Guy
 					switch(_action)
 					{
 						case ACT_TREE:
-							_targetTree = t;
-							t.status = Tree.STATUS_CUTTING;
+							if (tTree!=null)
+							{
+								_targetTree = tTree;
+								tTree.status = Tree.STATUS_CUTTING;
+							}
 							
 						case ACT_BUILD:
 							var h:House = new House(_w, bX,bY);

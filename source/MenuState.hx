@@ -23,6 +23,7 @@ class MenuState extends FlxState
 		#if !FLX_NO_MOUSE
 		FlxG.mouse.show();
 		#end
+		FlxG.autoPause = false;
 		
 		var b:FlxButton = new FlxButton(0, 0, "Start", StartGame);
 		b.x = (FlxG.width - b.width) / 2;

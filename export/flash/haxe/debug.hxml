@@ -3,9 +3,11 @@
 -lib flixel
 -lib flixel-addons
 -cp source
+-D FLX_NO_FOCUS_LOST_SCREEN
 -D tools=1.2.4
 -D fdb
 -D web
+-D swf-script-timeout 60
 -swf-version 11.2
 -swf export/flash/bin/HaxeFlixel-GUM.swf
 -swf-header 680:480:60:FFFFFF

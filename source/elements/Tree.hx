@@ -1,6 +1,10 @@
 package elements;
 import flash.display.BitmapData;
+import flash.geom.Point;
+import flash.geom.Rectangle;
+import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.util.FlxColor;
 import flixel.util.FlxRandom;
 
 class Tree extends FlxSprite
@@ -13,7 +17,7 @@ class Tree extends FlxSprite
 	public inline static var STATUS_CUTTING:Int = 1;
 	public inline static var STATUS_CUTDOWN:Int = 2;
 	
-	private var _status:Int;
+	private var _status:Int=0;
 	
 	private var _w:World;
 	
@@ -24,6 +28,7 @@ class Tree extends FlxSprite
 		_w = W;
 		COLOR_TRUNK = [0xff5C4425, 0xff736149, 0xff8A847D, 0xff573A14];
 		COLOR_LEAF = [0xff1D401A, 0xff0E380A, 0xff30A825, 0xff42753D];
+		buildTree();
 	}
 	
 	override public function reset(X:Float, Y:Float):Void 
@@ -34,11 +39,12 @@ class Tree extends FlxSprite
 	
 	public function buildTree():Void
 	{
+
 		var tHeight:Int = FlxRandom.intRanged(6, 40);
 		var tWidth:Int = FlxRandom.intRanged(Std.int(tHeight / 5), Std.int(tHeight / 2)+1);
 		var lHeight:Int = FlxRandom.intRanged(4, tHeight - 4);
 		var density:Float = FlxRandom.floatRanged(0.7, 0.9);
-		makeGraphic(0, 0, 0x0, true);
+		
 		var canvas:BitmapData = new BitmapData((tWidth * 2) + 1, tHeight + 2, true, 0x00000000);
 		var tColor:Int = COLOR_TRUNK[FlxRandom.intRanged(0, COLOR_TRUNK.length)];
 		
@@ -67,11 +73,12 @@ class Tree extends FlxSprite
 				//}
 			}
 		}
-		makeGraphic(canvas.width, canvas.height, 0x00000000, true);
-		width = canvas.width;
-		width = canvas.height;
+		//makeGraphic(canvas.width, canvas.height, 0x0, true);
 		pixels = canvas;
+		
 		dirty = true;
+		
+		
 	}
 	
 	function get_status():Int 
