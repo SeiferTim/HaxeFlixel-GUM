@@ -39,6 +39,7 @@ class Ground
 			_groundMap.pixels.setPixel32(X, i, 0x0);
 		_points[X] += Amt;
 		_groundMap.dirty = true;
+		_groundMap.resetFrameBitmapDatas();
 	}
 	
 	public function fillGround(X:Int, Amt:Int):Void
@@ -48,6 +49,7 @@ class Ground
 			_groundMap.pixels.setPixel32(X, i, COLOR_DIRT[FlxRandom.intRanged(0,COLOR_DIRT.length)]);
 		_points[X] -= Amt;
 		groundMap.dirty = true;
+		_groundMap.resetFrameBitmapDatas();
 	}
 	
 	public function GenerateGround(Seed:Float = 0):Void
@@ -289,6 +291,7 @@ class Ground
 		_groundMap.makeGraphic(FlxG.width, FlxG.height, 0x0, true);
 		_groundMap.pixels = canvas;
 		_groundMap.dirty = true;
+		_groundMap.resetFrameBitmapDatas();
 		
 	}
 	

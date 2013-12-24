@@ -84,7 +84,7 @@ class World
 	public function updateDwarfs():Void
 	{
 		_dwarfPop = 0;
-		_lyrDwarfs.pixels = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		_lyrDwarfs.pixels.fillRect(new Rectangle(0, 0, _lyrDwarfs.pixels.width, _lyrDwarfs.pixels.height), 0x0); //= new BitmapData(FlxG.width, FlxG.height, true, 0x0);
 		for (d in _dwarfs)
 		{
 			if (d.life > 0)
@@ -95,12 +95,13 @@ class World
 			}
 		}
 		_lyrDwarfs.dirty = true;
+		_lyrDwarfs.resetFrameBitmapDatas();
 	}
 	
 	public function updateGuys():Void
 	{
 		_humanPop = 0;
-		_lyrGuys.pixels = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		_lyrGuys.pixels.fillRect(new Rectangle(0, 0, _lyrGuys.pixels.width, _lyrGuys.pixels.height), 0x0);// = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
 		for (g in guys)
 		{
 			if (g.life > 0)
@@ -117,6 +118,7 @@ class World
 			}
 		}
 		_lyrGuys.dirty = true;
+		_lyrGuys.resetFrameBitmapDatas();
 	}
 	
 	public function update():Void
@@ -183,6 +185,7 @@ class World
 			}
 		}
 		_magma.update();
+		_caves.resetFrameBitmapDatas();
 	}
 	
 	public function populateDwarfs():Void
@@ -209,6 +212,7 @@ class World
 		
 		_dRooms.pixels.fillRect(new Rectangle(dX, dY, dW, dH), 0xffff0000);
 		_dRooms.dirty = true;
+		_dRooms.resetFrameBitmapDatas();
 		
 		for (dC in 0...4)
 		{
@@ -390,6 +394,7 @@ class World
 		}
 		_caves.pixels = tmp;
 		_caves.dirty = true;
+		_caves.resetFrameBitmapDatas();
 	}
 	
 	

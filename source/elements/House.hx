@@ -29,6 +29,7 @@ class House extends FlxSprite
 		makeGraphic(5, 5, 0x00000000);
 		pixels = new BitmapData(5, 5, true, 0x00000000);
 		dirty = true;
+		resetFrameBitmapDatas();
 		width = 5;
 		height = 5;
 		x = X;
@@ -48,6 +49,7 @@ class House extends FlxSprite
 			}
 		}
 		_w.ground.groundMap.dirty = true;
+		_w.ground.groundMap.resetFrameBitmapDatas();
 		_paint = COLOR_PAINT[FlxRandom.intRanged(0, COLOR_TRUNK.length)];
 	}
 	
@@ -83,7 +85,7 @@ class House extends FlxSprite
 		}
 		
 		dirty = true;
-		
+		resetFrameBitmapDatas();
 		health += Value;
 		if (health > 50) health = 51;
 	}

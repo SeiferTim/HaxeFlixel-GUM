@@ -85,6 +85,8 @@ class Magma
 			}
 			_mSpr.pixels.setPixel32(Std.int(mP1.x), Std.int(mP1.y), 0x00000000);
 			_mSpr.pixels.setPixel32(mP.x, mP.y, COLORS_MAGMA[FlxRandom.intRanged(0, COLORS_MAGMA.length)]);
+			_mSpr.dirty = true;
+			_mSpr.resetFrameBitmapDatas();
 		}
 		
 		

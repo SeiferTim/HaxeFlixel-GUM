@@ -431,6 +431,7 @@ class Dwarf
 				{
 					_w.dRooms.pixels.fillRect(_room, 0xffff0000);
 					_w.dRooms.dirty = true;
+					_w.dRooms.resetFrameBitmapDatas();
 				}
 				t.kill();
 			}

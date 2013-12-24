@@ -5,11 +5,14 @@
 -lib flixel
 -lib flixel-addons
 -cp source
+-D FLX_NO_FOCUS_LOST_SCREEN
 -D tools=1.2.4
+-D FLX_NO_DEBUG
 -D lime_native
 -D no-compilation
 -D windows
 -D desktop
+-D swf-script-timeout 60
 -cpp export/windows/cpp/obj
 -cp export/windows/cpp/haxe
 --macro allowPackage("flash")

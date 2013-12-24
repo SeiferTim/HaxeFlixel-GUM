@@ -23,6 +23,7 @@ class DwarfHouse extends FlxSprite
 		makeGraphic(5, 5, 0x0);
 		pixels = new BitmapData(5, 5, true, 0x0);
 		dirty = true;
+		resetFrameBitmapDatas();
 		width = 5;
 		height = 5;
 		x = X - 3;
@@ -63,7 +64,7 @@ class DwarfHouse extends FlxSprite
 		}
 		
 		dirty = true;
-		
+		resetFrameBitmapDatas();
 		health += Value;
 		if (health > 25) health = 26;
 	}

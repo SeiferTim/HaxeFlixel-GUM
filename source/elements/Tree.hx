@@ -77,6 +77,7 @@ class Tree extends FlxSprite
 		pixels = canvas;
 		
 		dirty = true;
+		resetFrameBitmapDatas();
 		
 		
 	}
