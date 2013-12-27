@@ -65,84 +65,73 @@ class Magma
 			
 	}
 	
-	public function update(WhileAnyMove:Bool = false):Void
+	public function update():Void
 	{
 
-		var anyMoved:Bool = true;
 		var work:BitmapData = _mSpr.pixels.clone();
 		var dirChoice:Array<Int>;
 		var loops:Int = 0;
 
-		WhileAnyMove = false;
-		
-		while (anyMoved)
-		{
-			loops++;
-			if (loops % 10 == 0)
-				trace(loops);
-			_m.sort(ParticleSort);
-			
-			for (mP in _m)
-			{		
 
-				if (!CheckMPos(work, mP.x, mP.y + 1) && !_w.isSolid( mP.x + 0, mP.y + 1))
+		_m.sort(ParticleSort);
+		
+		for (mP in _m)
+		{		
+
+			if (!CheckMPos(work, mP.x, mP.y + 1) && !_w.isSolid( mP.x + 0, mP.y + 1))
+			{
+					
+				erasePx(work, mP.x, mP.y);
+				mP.y++;
+				if (CheckOkay(mP))
+					drawPx(work, mP.x, mP.y);
+					
+			}
+			else
+			{
+				dirChoice = new Array();
+				
+				if (CheckMPos(work, mP.x, mP.y - 1) || (CheckMPos(work, mP.x - 1 , mP.y - 1) && CheckMPos(work, mP.x - 1, mP.y)) || (CheckMPos(work, mP.x + 1 , mP.y - 1) && CheckMPos(work, mP.x + 1, mP.y)))
 				{
-					anyMoved = true;	
-					erasePx(work, mP.x, mP.y);
-					mP.y++;
-					if (CheckOkay(mP))
-						drawPx(work, mP.x, mP.y);
+					
+					if (!CheckMPos(work, mP.x - 1, mP.y) && !_w.isSolid(mP.x - 1, mP.y))
+						dirChoice.push( -1);
+					
+					if (!CheckMPos(work, mP.x + 1, mP.y) && !_w.isSolid(mP.x + 1, mP.y))
+						dirChoice.push(1);
 						
+					if (dirChoice.length > 0)
+					{
+						
+						erasePx(work, mP.x, mP.y);
+						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
+						if (CheckOkay(mP))
+							drawPx(work, mP.x, mP.y);
+					}
 				}
 				else
 				{
-					dirChoice = new Array();
+					if (!CheckMPos(_mSpr.pixels, mP.x - 1, mP.y +1 ) && !_w.isSolid(mP.x - 1, mP.y +1))
+						dirChoice.push( -1);
 					
-					if (CheckMPos(work, mP.x, mP.y - 1) || (CheckMPos(work, mP.x - 1 , mP.y - 1) && CheckMPos(work, mP.x - 1, mP.y)) || (CheckMPos(work, mP.x + 1 , mP.y - 1) && CheckMPos(work, mP.x + 1, mP.y)))
+					if (!CheckMPos(_mSpr.pixels, mP.x + 1, mP.y + 1) && !_w.isSolid(mP.x + 1, mP.y + 1))
+						dirChoice.push(1);
+						
+					if (dirChoice.length > 0)
 					{
 						
-						if (!CheckMPos(work, mP.x - 1, mP.y) && !_w.isSolid(mP.x - 1, mP.y))
-							dirChoice.push( -1);
-						
-						if (!CheckMPos(work, mP.x + 1, mP.y) && !_w.isSolid(mP.x + 1, mP.y))
-							dirChoice.push(1);
-							
-						if (dirChoice.length > 0)
-						{
-							anyMoved = true;	
-							erasePx(work, mP.x, mP.y);
-							mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-							if (CheckOkay(mP))
-								drawPx(work, mP.x, mP.y);
-						}
+						erasePx(work, mP.x, mP.y);
+						mP.y++;
+						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
+						if (CheckOkay(mP))
+							drawPx(work, mP.x, mP.y);
 					}
-					else
-					{
-						if (!CheckMPos(_mSpr.pixels, mP.x - 1, mP.y +1 ) && !_w.isSolid(mP.x - 1, mP.y +1))
-							dirChoice.push( -1);
-						
-						if (!CheckMPos(_mSpr.pixels, mP.x + 1, mP.y + 1) && !_w.isSolid(mP.x + 1, mP.y + 1))
-							dirChoice.push(1);
-							
-						if (dirChoice.length > 0)
-						{
-							anyMoved = true;	
-							erasePx(work, mP.x, mP.y);
-							mP.y++;
-							mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-							if (CheckOkay(mP))
-								drawPx(work, mP.x, mP.y);
-						}
-					}
-					
 				}
+				
 			}
-			
-			if (!WhileAnyMove) anyMoved = false;
-			
 		}
 		
-		trace(loops);
+		//trace(loops);
 		
 		_mSpr.cachedGraphics.destroyOnNoUse = true;
 		_mSpr.pixels = work.clone();

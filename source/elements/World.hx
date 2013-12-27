@@ -228,7 +228,7 @@ class World
 		
 		//while (anyMoved)
 		//	anyMoved = _magma.update();
-		_magma.update(true);
+		_magma.update();
 		_caves.resetFrameBitmapDatas();
 	}
 	
