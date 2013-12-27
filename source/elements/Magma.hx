@@ -11,7 +11,7 @@ import flixel.util.FlxRandom;
 class Magma
 {
 
-	private var COLORS_MAGMA:Array<Int>;
+	public static var COLORS_MAGMA:Array<Int>;
 	
 	private var _w:World;
 	private var _mSpr:FlxSprite;
@@ -25,7 +25,7 @@ class Magma
 		_mSpr = new FlxSprite();// .makeGraphic(FlxG.width, FlxG.height, 0x0, true);
 		_mSpr.cachedGraphics.destroyOnNoUse = true;
 		_mSpr.pixels = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
-		COLORS_MAGMA = [0xFFFF6600, 0xFFFFD52B, 0xFFFFF700];//FlxGradient.createGradientArray(1, 10, [0xFFFF6600, 0xFFFFD52B, 0xFFFFF700],1,90);
+		COLORS_MAGMA = FlxGradient.createGradientArray(1, 10, [0xFFFF6600, 0xFFFFD52B, 0xFFFFF700],1,90);
 	}
 	
 	public function CheckMPos(BMD:BitmapData, X:Int, Y:Int):Bool
@@ -51,7 +51,7 @@ class Magma
 	
 	private function drawPx(BMD:BitmapData,X,Y):Void 
 	{
-		BMD.setPixel32(X, Y, COLORS_MAGMA[FlxRandom.intRanged(0, COLORS_MAGMA.length-1)]);
+		BMD.setPixel32(X, Y, COLORS_MAGMA[FlxRandom.intRanged(0,COLORS_MAGMA.length-1)]);
 	}
 	
 	private function CheckOkay(M:MagmaParticle):Bool
@@ -61,6 +61,8 @@ class Magma
 			_m.remove(M);
 			return false;
 		}
+		else
+			M.update();
 		return true;
 			
 	}
@@ -71,20 +73,18 @@ class Magma
 		var work:BitmapData = _mSpr.pixels.clone();
 		var dirChoice:Array<Int>;
 		var loops:Int = 0;
-
+		var moved:Bool = false;
 
 		_m.sort(ParticleSort);
 		
 		for (mP in _m)
 		{		
-
+			moved = false;
 			if (!CheckMPos(work, mP.x, mP.y + 1) && !_w.isSolid( mP.x + 0, mP.y + 1))
 			{
-					
+				moved = true;
 				erasePx(work, mP.x, mP.y);
 				mP.y++;
-				if (CheckOkay(mP))
-					drawPx(work, mP.x, mP.y);
 					
 			}
 			else
@@ -103,10 +103,9 @@ class Magma
 					if (dirChoice.length > 0)
 					{
 						
+						moved = true;
 						erasePx(work, mP.x, mP.y);
 						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-						if (CheckOkay(mP))
-							drawPx(work, mP.x, mP.y);
 					}
 				}
 				else
@@ -119,15 +118,20 @@ class Magma
 						
 					if (dirChoice.length > 0)
 					{
-						
+						moved = true;
 						erasePx(work, mP.x, mP.y);
 						mP.y++;
 						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-						if (CheckOkay(mP))
-							drawPx(work, mP.x, mP.y);
+						
 					}
+					
+						
 				}
 				
+			}
+			if (CheckOkay(mP) && moved)
+			{
+				drawPx(work, mP.x, mP.y);
 			}
 		}
 		
@@ -149,6 +153,7 @@ class Magma
 		var pX:Int = 0;
 		var hits:Bool = false;
 		var dirChoice:Array<Int>;
+		var mP:MagmaParticle;
 		
 		while(!hits && Y+pY+1 < FlxG.height)
 		{
@@ -164,7 +169,8 @@ class Magma
 		
 		if (hits)
 		{	
-			_m.push(new MagmaParticle(X, Y+pY));
+			mP = new MagmaParticle(X, Y + pY);
+			_m.push(mP);
 			drawPx(_mSpr.pixels, X, Y + pY);
 		}
 	}

@@ -2,6 +2,9 @@ package elements;
 import flash.display.BitmapData;
 import flash.display.BitmapDataChannel;
 import flash.display.BlendMode;
+import flash.filters.BitmapFilter;
+import flash.filters.BlurFilter;
+import flash.geom.ColorTransform;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flixel.FlxG;
@@ -234,11 +237,32 @@ class World
 	
 	private function AddMagma():Void 
 	{
-		var gradient:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff000000, 0xff000000], 1, 90, false);
+		//var gradient_v:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0x0, 0x0, 0xff000000, 0xff000000, 0xff000000], 1, 90, true);
+		//FlxGradient.overlayGradientOnBitmapData(gradient_v, FlxG.width, FlxG.height, [0x0, 0xff000000, 0x0], 0, 0, 1, 0, true);
+		
+		//var invertTransform:ColorTransform = new ColorTransform( -1, -1, -1, -1, 255, 255, 255, 255);
+		//gradient_v.colorTransform(gradient_v.rect, invertTransform);
+		//var gradient_v:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0x0,0x0, 0xff000000, 0xff000000, 0x0,0x0], 1, 0, true);
+		
+		var gradient_v:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		gradient_v.copyChannel(_ground.groundMap.pixels, _ground.groundMap.pixels.rect, new Point(), BitmapDataChannel.ALPHA, BitmapDataChannel.RED | BitmapDataChannel.GREEN | BitmapDataChannel.BLUE);
+		gradient_v.applyFilter(gradient_v, gradient_v.rect, new Point(), new BlurFilter(64,64, 1));
+		var gradient_v:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		var cTransform:ColorTransform = new ColorTransform(255,255,255,1,0,0,0,0);
+		
+		
+		gradient_v = _ground.groundMap.pixels.clone();
+		gradient_v.colorTransform(gradient_v.rect, cTransform);
+		
+		//.copyChannel(_world.ground.groundMap.pixels, _world.ground.groundMap.pixels.rect, new Point(), BitmapDataChannel.ALPHA, BitmapDataChannel.RED | BitmapDataChannel.GREEN | BitmapDataChannel.BLUE);
+		
+		gradient_v.applyFilter(gradient_v, gradient_v.rect, new Point(), new BlurFilter(128,128, 1));		
+		
+		
 		
 		var noise:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
 		noise.perlinNoise(FlxG.width/2, FlxG.height/2, 4, FlxRandom.int(), false, true, BitmapDataChannel.ALPHA, true);
-		noise.merge(gradient, gradient.rect, new Point(0, 0), 60, 60, 60, 60);
+		noise.merge(gradient_v, gradient_v.rect, new Point(0, 0), 0x60, 0x60, 0x60, 0x255);
 		
 		for (nX in 0...noise.width)
 		{
@@ -253,7 +277,8 @@ class World
 				}
 			}
 		}
-		gradient.dispose();
+		gradient_v.dispose();
+		//gradient_h.dispose();
 		noise.dispose();
 		
 	}

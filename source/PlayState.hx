@@ -4,6 +4,8 @@ import elements.World;
 import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.display.BitmapDataChannel;
+import flash.filters.BlurFilter;
+import flash.geom.ColorTransform;
 import flash.geom.Point;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -159,8 +161,22 @@ class PlayState extends FlxState
 				_hudDFood = cast _lyrHUD.add(new FlxText(84, 110, 60, "0").setFormat(null, 8, 0xffffff, "right"));
 				_hudDOre = cast _lyrHUD.add(new FlxText(84, 122, 60, "0").setFormat(null, 8, 0xffffff, "right"));
 				
+				/*
+				
+				var gradient_v:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+				var cTransform:ColorTransform = new ColorTransform(255,255,255,1,0,0,0,0);
 				
 				
+				gradient_v = _world.ground.groundMap.pixels.clone();
+				gradient_v.colorTransform(gradient_v.rect, cTransform);
+				
+				//.copyChannel(_world.ground.groundMap.pixels, _world.ground.groundMap.pixels.rect, new Point(), BitmapDataChannel.ALPHA, BitmapDataChannel.RED | BitmapDataChannel.GREEN | BitmapDataChannel.BLUE);
+				
+				gradient_v.applyFilter(gradient_v, gradient_v.rect, new Point(), new BlurFilter(128,128, 1));
+				
+				var s:FlxSprite = new FlxSprite();
+				s.pixels = gradient_v.clone();
+				add(s);*/
 				
 				_created = 100;
 		}
