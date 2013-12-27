@@ -74,8 +74,8 @@ class Tree extends FlxSprite
 			}
 		}
 		//makeGraphic(canvas.width, canvas.height, 0x0, true);
-		pixels = canvas;
-		
+		pixels = canvas.clone();
+		canvas.dispose();
 		dirty = true;
 		resetFrameBitmapDatas();
 		

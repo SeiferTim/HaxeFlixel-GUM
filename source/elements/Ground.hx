@@ -289,8 +289,10 @@ class Ground
 		
 		_groundMap = new FlxSprite(0, 0);
 		_groundMap.makeGraphic(FlxG.width, FlxG.height, 0x0, true);
-		_groundMap.pixels = canvas;
+		_groundMap.cachedGraphics.destroyOnNoUse = true;
+		_groundMap.pixels = canvas.clone();
 		_groundMap.dirty = true;
+		canvas.dispose();
 		_groundMap.resetFrameBitmapDatas();
 		
 	}

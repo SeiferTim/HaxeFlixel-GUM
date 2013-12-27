@@ -159,6 +159,7 @@ class World
 	public function populateCaves():Void
 	{
 		_caves = new FlxSprite(0, 0);// .makeGraphic(FlxG.width, FlxG.height, 0x0, true);
+		_caves.cachedGraphics.destroyOnNoUse = true;
 		_caves.pixels = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
 		_caves.dirty = true;
 		var cX:Int;
@@ -218,15 +219,16 @@ class World
 			c = drawCaveCrack(c, cX, FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10));
 		}
 		
+		_caves.cachedGraphics.destroyOnNoUse = true;
 		_caves.pixels = c.clone();
 		c.dispose();
-		//AddMagma();
+		AddMagma();
 		
-		var anyMoved:Bool = true;
+		//var anyMoved:Bool = true;
 		
-		while (anyMoved)
-			anyMoved = _magma.update();
-
+		//while (anyMoved)
+		//	anyMoved = _magma.update();
+		_magma.update(true);
 		_caves.resetFrameBitmapDatas();
 	}
 	
@@ -235,7 +237,7 @@ class World
 		var gradient:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff000000, 0xff000000], 1, 90, false);
 		
 		var noise:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
-		noise.perlinNoise(FlxG.width/8, FlxG.height/8, 10, FlxRandom.int(), false, false, BitmapDataChannel.ALPHA, true);
+		noise.perlinNoise(FlxG.width/2, FlxG.height/2, 4, FlxRandom.int(), false, true, BitmapDataChannel.ALPHA, true);
 		noise.merge(gradient, gradient.rect, new Point(0, 0), 60, 60, 60, 60);
 		
 		for (nX in 0...noise.width)
@@ -282,6 +284,7 @@ class World
 			}
 			noise.dispose();
 		}
+		_caves.cachedGraphics.destroyOnNoUse = true;
 		_caves.pixels = c.clone();
 		c.dispose();
 		gradient.dispose();
@@ -558,6 +561,7 @@ class World
 				tmp = DrawCaveP(tmp, X, Y);
 				
 		}
+		_caves.cachedGraphics.destroyOnNoUse = true;
 		_caves.pixels = tmp.clone();
 		tmp.dispose();
 		_caves.dirty = true;

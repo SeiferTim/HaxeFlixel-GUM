@@ -23,14 +23,15 @@ class Magma
 		_w = W;
 		_m = new Array<MagmaParticle>();
 		_mSpr = new FlxSprite();// .makeGraphic(FlxG.width, FlxG.height, 0x0, true);
+		_mSpr.cachedGraphics.destroyOnNoUse = true;
 		_mSpr.pixels = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
 		COLORS_MAGMA = [0xFFFF6600, 0xFFFFD52B, 0xFFFFF700];//FlxGradient.createGradientArray(1, 10, [0xFFFF6600, 0xFFFFD52B, 0xFFFFF700],1,90);
 	}
 	
-	public function CheckMPos(X:Int, Y:Int):Bool
+	public function CheckMPos(BMD:BitmapData, X:Int, Y:Int):Bool
 	{
 		if (X <= 0 || X >= FlxG.width || Y <= 0 || Y >= FlxG.height) return false;
-		return _mSpr.pixels.getPixel32(X, Y) != 0;
+		return BMD.getPixel32(X, Y) != 0;
 	}
 	
 	private function ParticleSort(mA:MagmaParticle, mB:MagmaParticle):Int
@@ -43,94 +44,140 @@ class Magma
 			return 0;
 	}
 	
-	public function update():Bool
+	private function erasePx(BMD:BitmapData,X:Int, Y:Int):Void
+	{
+		BMD.setPixel32(X, Y, 0x0);
+	}
+	
+	private function drawPx(BMD:BitmapData,X,Y):Void 
+	{
+		BMD.setPixel32(X, Y, COLORS_MAGMA[FlxRandom.intRanged(0, COLORS_MAGMA.length-1)]);
+	}
+	
+	private function CheckOkay(M:MagmaParticle):Bool
+	{
+		if (M.x < 0 || M.y < 0 || M.x > FlxG.width || M.y > FlxG.height)
+		{
+			_m.remove(M);
+			return false;
+		}
+		return true;
+			
+	}
+	
+	public function update(WhileAnyMove:Bool = false):Void
 	{
 
-		var anyMoved:Bool = false;
-		
-		var tmp:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
-		
-		_m.sort(ParticleSort);
-		
-		//var mP1:FlxPoint;
+		var anyMoved:Bool = true;
+		var work:BitmapData = _mSpr.pixels.clone();
 		var dirChoice:Array<Int>;
-		//trace(_m.length);
-		for (mP in _m)
+		var loops:Int = 0;
+
+		WhileAnyMove = false;
+		
+		while (anyMoved)
 		{
-			//mP1 = new FlxPoint(mP.x, mP.y);
+			loops++;
+			if (loops % 10 == 0)
+				trace(loops);
+			_m.sort(ParticleSort);
 			
-			if (!CheckMPos(mP.x, mP.y + 1) && !_w.isSolid(mP.x + 0, mP.y +1))
-			{
-				
-					mP.y++;
-					anyMoved = true;
-			}
-			else
-			{
-				dirChoice = new Array();
-				
-				if (CheckMPos(mP.x, mP.y - 1) || (CheckMPos(mP.x - 1 , mP.y - 1) && CheckMPos(mP.x - 1, mP.y)) || (CheckMPos(mP.x + 1 , mP.y - 1) && CheckMPos(mP.x + 1, mP.y)))
+			for (mP in _m)
+			{		
+
+				if (!CheckMPos(work, mP.x, mP.y + 1) && !_w.isSolid( mP.x + 0, mP.y + 1))
 				{
-					
-					if (!CheckMPos(mP.x - 1, mP.y) && !_w.isSolid(mP.x - 1, mP.y))
-						dirChoice.push( -1);
-					
-					if (!CheckMPos(mP.x + 1, mP.y) && !_w.isSolid(mP.x + 1, mP.y))
-						dirChoice.push(1);
+					anyMoved = true;	
+					erasePx(work, mP.x, mP.y);
+					mP.y++;
+					if (CheckOkay(mP))
+						drawPx(work, mP.x, mP.y);
 						
-					if (dirChoice.length > 0)
-					{
-						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-						anyMoved = true;
-					}
 				}
 				else
 				{
-					if (!CheckMPos(mP.x - 1, mP.y +1 ) && !_w.isSolid(mP.x - 1, mP.y +1))
-						dirChoice.push( -1);
+					dirChoice = new Array();
 					
-					if (!CheckMPos(mP.x + 1, mP.y + 1) && !_w.isSolid(mP.x + 1, mP.y + 1))
-						dirChoice.push(1);
-						
-					if (dirChoice.length > 0)
+					if (CheckMPos(work, mP.x, mP.y - 1) || (CheckMPos(work, mP.x - 1 , mP.y - 1) && CheckMPos(work, mP.x - 1, mP.y)) || (CheckMPos(work, mP.x + 1 , mP.y - 1) && CheckMPos(work, mP.x + 1, mP.y)))
 					{
-						mP.y++;
-						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-						anyMoved = true;
+						
+						if (!CheckMPos(work, mP.x - 1, mP.y) && !_w.isSolid(mP.x - 1, mP.y))
+							dirChoice.push( -1);
+						
+						if (!CheckMPos(work, mP.x + 1, mP.y) && !_w.isSolid(mP.x + 1, mP.y))
+							dirChoice.push(1);
+							
+						if (dirChoice.length > 0)
+						{
+							anyMoved = true;	
+							erasePx(work, mP.x, mP.y);
+							mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
+							if (CheckOkay(mP))
+								drawPx(work, mP.x, mP.y);
+						}
 					}
+					else
+					{
+						if (!CheckMPos(_mSpr.pixels, mP.x - 1, mP.y +1 ) && !_w.isSolid(mP.x - 1, mP.y +1))
+							dirChoice.push( -1);
+						
+						if (!CheckMPos(_mSpr.pixels, mP.x + 1, mP.y + 1) && !_w.isSolid(mP.x + 1, mP.y + 1))
+							dirChoice.push(1);
+							
+						if (dirChoice.length > 0)
+						{
+							anyMoved = true;	
+							erasePx(work, mP.x, mP.y);
+							mP.y++;
+							mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
+							if (CheckOkay(mP))
+								drawPx(work, mP.x, mP.y);
+						}
+					}
+					
 				}
-				
-			}
-		}
-		
-		//_mSpr.pixels.fillRect(new Rectangle(0, 0, _mSpr.pixels.width, _mSpr.pixels.height), 0x0);
-		
-		
-		
-		for (mP in _m)
-		{
-			if (mP.x > FlxG.width || mP.x < 0 || mP.y > FlxG.height || mP.y < 0)
-			{	
-				_m.remove(mP);
-			}
-			else 
-			{
-				tmp.setPixel32(mP.x, mP.y, COLORS_MAGMA[FlxRandom.intRanged(0, COLORS_MAGMA.length-1)]);
 			}
 			
+			if (!WhileAnyMove) anyMoved = false;
+			
 		}
-		_mSpr.pixels = tmp.clone();
-		tmp.dispose();
+		
+		trace(loops);
+		
+		_mSpr.cachedGraphics.destroyOnNoUse = true;
+		_mSpr.pixels = work.clone();
+		work.dispose();
 		_mSpr.dirty = true;
 		_mSpr.resetFrameBitmapDatas();
-		return anyMoved;
+		
 		
 		
 	}
 	
 	public function spawnMagma(X:Int, Y:Int):Void
 	{
-		_m.push(new MagmaParticle(X, Y));
+		var pY:Int = 0;
+		var pX:Int = 0;
+		var hits:Bool = false;
+		var dirChoice:Array<Int>;
+		
+		while(!hits && Y+pY+1 < FlxG.height)
+		{
+			if (!_w.isSolid(X, Y + pY + 1) && !CheckMPos(_mSpr.pixels, X, Y + pY + 1))
+			{
+				pY++;
+			}
+			else
+			{
+				hits = true;
+			}
+		}
+		
+		if (hits)
+		{	
+			_m.push(new MagmaParticle(X, Y+pY));
+			drawPx(_mSpr.pixels, X, Y + pY);
+		}
 	}
 	
 	function get_mSpr():FlxSprite 
