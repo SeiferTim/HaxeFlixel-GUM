@@ -1,6 +1,8 @@
 package elements;
 import flash.display.BitmapData;
+import flash.display.BitmapDataChannel;
 import flash.display.BlendMode;
+import flash.geom.Point;
 import flash.geom.Rectangle;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -78,13 +80,7 @@ class World
 		_lyrMagma = _magma.mSpr;
 		_dwarfFood = 2000;
 		_dwarfOre = 0;
-		
-		
-		
-		
-		
-		
-		
+
 	}
 	
 	public function MakeSky():Void
@@ -146,8 +142,16 @@ class World
 		_ground.GenerateGround();
 	}
 	
+	public function isBMDSolid(BMD:BitmapData, X:Int, Y:Int):Bool
+	{
+		if (X <=0 || X>= FlxG.width || Y <= 0 || Y >= FlxG.height) return false;
+		var a:UInt =  FlxColorUtil.getAlpha(BMD.getPixel32(X, Y));
+		return a < 50 || a > 200;
+	}
+	
 	public function isSolid(X:Int, Y:Int):Bool
 	{
+		if (X <=0 || X>= FlxG.width || Y <= 0 || Y >= FlxG.height) return false;
 		var a:UInt =  FlxColorUtil.getAlpha(_caves.pixels.getPixel32(X, Y));
 		return a < 50 || a > 200;
 	}
@@ -159,6 +163,7 @@ class World
 		_caves.dirty = true;
 		var cX:Int;
 		var cY:Int;
+		/*
 		var rX:Int;
 		var rY:Int;
 		var hasM:Bool;
@@ -202,20 +207,90 @@ class World
 				}
 			}
 		}
+		*/
 		
+		GenerateNoiseCaves();
+		
+		var c:BitmapData = _caves.pixels.clone();
 		for (cCnt in 0...3)//FlxRandom.intRanged(2, 10))
 		{
 			cX = FlxRandom.intRanged(0, FlxG.width);
-			drawCaveCrack(cX, FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10));
+			c = drawCaveCrack(c, cX, FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10));
 		}
 		
-		for (l in 0...10)
-			_magma.update();
+		_caves.pixels = c.clone();
+		c.dispose();
+		//AddMagma();
+		
+		var anyMoved:Bool = true;
+		
+		while (anyMoved)
+			anyMoved = _magma.update();
 
 		_caves.resetFrameBitmapDatas();
 	}
 	
-	private function drawCaveCrack(StartX:Int, StartY:Int, Level:Int = 0):Void
+	private function AddMagma():Void 
+	{
+		var gradient:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff000000, 0xff000000], 1, 90, false);
+		
+		var noise:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		noise.perlinNoise(FlxG.width/8, FlxG.height/8, 10, FlxRandom.int(), false, false, BitmapDataChannel.ALPHA, true);
+		noise.merge(gradient, gradient.rect, new Point(0, 0), 60, 60, 60, 60);
+		
+		for (nX in 0...noise.width)
+		{
+			for (nY in _ground.points[nX]...noise.height)
+			{
+				if (!isSolid(nX,nY))
+				{
+					if (FlxColorUtil.getAlpha(noise.getPixel32(nX, nY)) > 120)
+					{
+						_magma.spawnMagma(nX, nY);
+					}
+				}
+			}
+		}
+		gradient.dispose();
+		noise.dispose();
+		
+	}
+	
+	private function GenerateNoiseCaves():Void
+	{
+		var c:BitmapData = _caves.pixels.clone();
+		var gradient:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0xff000000, 0x88000000,0x33000000 ], 1, 90, false);
+		
+		var noise:BitmapData;
+		
+		for (i in 0...FlxRandom.intRanged(3,4))
+		{
+			noise = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+			noise.perlinNoise(FlxG.width/3, FlxG.height/3, 10, FlxRandom.int(), false, false, BitmapDataChannel.ALPHA, true);
+			noise.merge(gradient, gradient.rect, new Point(0, 0), 70, 70, 70, 70);
+			
+			
+			for (nX in 0...noise.width)
+			{
+				for (nY in _ground.points[nX]...noise.height)
+				{
+					if (FlxColorUtil.getAlpha(noise.getPixel32(nX, nY)) < 50 )
+					{
+						c = DrawCaveP(c, nX, nY);
+					}
+				}
+			}
+			noise.dispose();
+		}
+		_caves.pixels = c.clone();
+		c.dispose();
+		gradient.dispose();
+		_caves.resetFrameBitmapDatas();
+		
+		
+	}
+	
+	private function drawCaveCrack(BMD:BitmapData, StartX:Int, StartY:Int, Level:Int = 0):BitmapData
 	{
 			var rX:Int = StartX;
 			var rY:Int = StartY;
@@ -228,7 +303,9 @@ class World
 			var width:Int = 1;// FlxRandom.intRanged(1, 20 - Level);
 			var branchTicks:Int = 25 * Level;
 			
-			var loops:Int = FlxRandom.intRanged(10, 400);
+			var c:BitmapData = BMD;
+			
+			var loops:Int = FlxRandom.intRanged(50, 150);
 			
 			for (cT in 0...loops)
 			{
@@ -240,9 +317,10 @@ class World
 						{
 							if (isSolid(X, Y))
 							{
-								MakeCave(X, Y, CORIENT_P);
-								if (FlxRandom.chanceRoll(Std.int(((rY / 2) / FlxG.height) * 100)) && FlxRandom.chanceRoll(80))
-									_magma.spawnMagma(X, Y);
+								c = DrawCaveP(c, X, Y);
+								//MakeCave(X, Y, CORIENT_P);
+								//if (FlxRandom.chanceRoll(Std.int((rY)/(FlxG.height/4)) * 100) && FlxRandom.chanceRoll(60))
+								//	_magma.spawnMagma(X, Y);
 								
 							}
 						}
@@ -255,7 +333,7 @@ class World
 					{
 						if(FlxRandom.chanceRoll(30))
 						{
-							drawCaveCrack(rX, rY, Level + 1);
+							c = drawCaveCrack(c,rX, rY, Level + 1);
 							branchTicks = 25 * Level;
 						}
 						
@@ -286,6 +364,7 @@ class World
 					
 				//}
 			}
+			return c;
 	}
 	
 	public function populateDwarfs():Void
@@ -373,10 +452,13 @@ class World
 		}
 	}
 	
-	public function MakeCave(X:Int, Y:Int, Orient:UInt = 0):Void
+	public function MakeCave(X:Int, Y:Int, Orient:UInt = 0, DoReset:Bool = true ):Void
 	{
-		var tmp:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
-		tmp = _caves.pixels;
+		
+		var tmp:BitmapData;// = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		//trace(_caves.pixels == null);
+		tmp = _caves.pixels.clone();
+		
 		switch(Orient)
 		{
 			case CORIENT_D:
@@ -473,30 +555,38 @@ class World
 					tmp.setPixel32(X - 1, Y + 4, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
 			case CORIENT_P:
 				// A cave in a specific point, for random caves mostly
-				if (_ground.points[X + 0] < Y + 0)
-					tmp.setPixel32(X + 0, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
-				if (isSolid(X - 1, Y - 1) && _ground.points[X - 1] < Y - 1)
-					tmp.setPixel32(X - 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
-				if (isSolid(X + 0, Y - 1) && _ground.points[X +0] < Y - 1)
-					tmp.setPixel32(X + 0, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
-				if (isSolid(X + 1, Y - 1) && _ground.points[X + 1] < Y - 1)
-					tmp.setPixel32(X + 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
-				if (isSolid(X - 1, Y + 0) && _ground.points[X - 1] < Y + 0)
-					tmp.setPixel32(X - 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
-				if (isSolid(X + 1, Y + 0) && _ground.points[X + 1] < Y + 0)
-					tmp.setPixel32(X + 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
-				if (isSolid(X - 1, Y + 1) && _ground.points[X - 1] < Y + 1)
-					tmp.setPixel32(X - 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
-				if (isSolid(X + 0, Y + 1) && _ground.points[X + 0] < Y + 1)
-					tmp.setPixel32(X + 0, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
-				if (isSolid(X + 1, Y + 1) && _ground.points[X + 1] < Y + 1)
-					tmp.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+				tmp = DrawCaveP(tmp, X, Y);
+				
 		}
-		_caves.pixels = tmp;
+		_caves.pixels = tmp.clone();
+		tmp.dispose();
 		_caves.dirty = true;
-		_caves.resetFrameBitmapDatas();
+		if (DoReset)
+			_caves.resetFrameBitmapDatas();
 	}
 	
+	private function DrawCaveP(BMD:BitmapData, X:Int, Y:Int):BitmapData
+	{
+		if (_ground.points[X + 0] < Y + 0)
+			BMD.setPixel32(X + 0, Y + 0, COLOR_CMID[FlxRandom.intRanged(0, COLOR_CMID.length-1)]);
+		if (isBMDSolid(BMD, X - 1, Y - 1) && _ground.points[X - 1] < Y - 1)
+			BMD.setPixel32(X - 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+		if (isBMDSolid(BMD, X + 0, Y - 1) && _ground.points[X +0] < Y - 1)
+			BMD.setPixel32(X + 0, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+		if (isBMDSolid(BMD, X + 1, Y - 1) && _ground.points[X + 1] < Y - 1)
+			BMD.setPixel32(X + 1, Y - 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+		if (isBMDSolid(BMD, X - 1, Y + 0) && _ground.points[X - 1] < Y + 0)
+			BMD.setPixel32(X - 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+		if (isBMDSolid(BMD, X + 1, Y + 0) && _ground.points[X + 1] < Y + 0)
+			BMD.setPixel32(X + 1, Y + 0, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+		if (isBMDSolid(BMD, X - 1, Y + 1) && _ground.points[X - 1] < Y + 1)
+			BMD.setPixel32(X - 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+		if (isBMDSolid(BMD, X + 0, Y + 1) && _ground.points[X + 0] < Y + 1)
+			BMD.setPixel32(X + 0, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length-1)]);
+		if (isBMDSolid(BMD, X + 1, Y + 1) && _ground.points[X + 1] < Y + 1)
+			BMD.setPixel32(X + 1, Y + 1, COLOR_DIRT[FlxRandom.intRanged(0, COLOR_DIRT.length - 1)]);
+		return BMD;
+	}
 	
 	function get_dRooms():FlxSprite 
 	{

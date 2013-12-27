@@ -1,13 +1,19 @@
 package;
 
 import elements.World;
+import flash.display.Bitmap;
+import flash.display.BitmapData;
+import flash.display.BitmapDataChannel;
+import flash.geom.Point;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
+import flixel.util.FlxGradient;
 import flixel.util.FlxMath;
+import flixel.util.FlxRandom;
 
 /**
  * A FlxState which can be used for the actual gameplay.
@@ -152,6 +158,9 @@ class PlayState extends FlxState
 				_hudDPop = cast _lyrHUD.add(new FlxText(84, 98, 60, "0").setFormat(null, 8, 0xffffff, "right"));
 				_hudDFood = cast _lyrHUD.add(new FlxText(84, 110, 60, "0").setFormat(null, 8, 0xffffff, "right"));
 				_hudDOre = cast _lyrHUD.add(new FlxText(84, 122, 60, "0").setFormat(null, 8, 0xffffff, "right"));
+				
+				
+				
 				
 				_created = 100;
 		}

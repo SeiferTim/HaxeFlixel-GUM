@@ -29,7 +29,7 @@ class Magma
 	
 	public function CheckMPos(X:Int, Y:Int):Bool
 	{
-		
+		if (X <= 0 || X >= FlxG.width || Y <= 0 || Y >= FlxG.height) return false;
 		return _mSpr.pixels.getPixel32(X, Y) != 0;
 	}
 	
@@ -43,9 +43,11 @@ class Magma
 			return 0;
 	}
 	
-	public function update():Void
+	public function update():Bool
 	{
 
+		var anyMoved:Bool = false;
+		
 		var tmp:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
 		
 		_m.sort(ParticleSort);
@@ -61,6 +63,7 @@ class Magma
 			{
 				
 					mP.y++;
+					anyMoved = true;
 			}
 			else
 			{
@@ -77,7 +80,8 @@ class Magma
 						
 					if (dirChoice.length > 0)
 					{
-						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length-1)];
+						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
+						anyMoved = true;
 					}
 				}
 				else
@@ -91,7 +95,8 @@ class Magma
 					if (dirChoice.length > 0)
 					{
 						mP.y++;
-						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length-1)];
+						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
+						anyMoved = true;
 					}
 				}
 				
@@ -100,13 +105,25 @@ class Magma
 		
 		//_mSpr.pixels.fillRect(new Rectangle(0, 0, _mSpr.pixels.width, _mSpr.pixels.height), 0x0);
 		
+		
+		
 		for (mP in _m)
 		{
-			tmp.setPixel32(mP.x, mP.y, COLORS_MAGMA[FlxRandom.intRanged(0, COLORS_MAGMA.length-1)]);
+			if (mP.x > FlxG.width || mP.x < 0 || mP.y > FlxG.height || mP.y < 0)
+			{	
+				_m.remove(mP);
+			}
+			else 
+			{
+				tmp.setPixel32(mP.x, mP.y, COLORS_MAGMA[FlxRandom.intRanged(0, COLORS_MAGMA.length-1)]);
+			}
+			
 		}
-		_mSpr.pixels = tmp;
+		_mSpr.pixels = tmp.clone();
+		tmp.dispose();
 		_mSpr.dirty = true;
 		_mSpr.resetFrameBitmapDatas();
+		return anyMoved;
 		
 		
 	}
