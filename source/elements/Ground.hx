@@ -13,6 +13,7 @@ class Ground
 	private var COLOR_MID:Array<Int>;
 	private var COLOR_DARK:Array<Int>;
 	private var COLOR_GRASS:Array<Int>;
+	//private var COLOR_STONE:Array<Int>;
 	
 	private var _groundMap:FlxSprite;
 	private var _points:Array<Int>;
@@ -30,6 +31,8 @@ class Ground
 		COLOR_MID = FlxGradient.createGradientArray(20, 20, [0xFF4F3710, 0xFF362914], 1, 90);
 		COLOR_DARK = FlxGradient.createGradientArray(20, 20, [0xFF0F0E0C, 0xFF241E0E], 1, 90);
 		COLOR_GRASS = FlxGradient.createGradientArray(20, 20, [0xff004217, 0xff5BDB42], 1, 90);
+		COLOR_STONE = FlxGradient.createGradientArray(20, 20, [0xff333333,0xffcccccc], 1, 90);
+		
 	}
 	
 	public function cutGround(X:Int, Amt:Int):Void 
@@ -48,7 +51,14 @@ class Ground
 		for (i in _points[X] - Amt..._points[X])
 			_groundMap.pixels.setPixel32(X, i, COLOR_DIRT[FlxRandom.intRanged(0,COLOR_DIRT.length-1)]);
 		_points[X] -= Amt;
-		groundMap.dirty = true;
+		_groundMap.dirty = true;
+		_groundMap.resetFrameBitmapDatas();
+	}
+	
+	public function drawStone(X:Int, Y:Int):Void
+	{
+		_groundMap.pixels.setPixel32(X, Y, COLOR_STONE[FlxRandom.intRanged(0, COLOR_STONE.length - 1)]);
+		_groundMap.dirty = true;
 		_groundMap.resetFrameBitmapDatas();
 	}
 	

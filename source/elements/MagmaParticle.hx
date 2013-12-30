@@ -1,22 +1,21 @@
 package elements;
+import flixel.FlxG;
 import flixel.util.FlxRandom;
 
 class MagmaParticle
 {
 
-	
-	
 	private var _x:Int;
 	private var _y:Int;
 	private var _temp:Float;
-	//private var _curColor:Int;
+	private var _ageSinceLastMove:Float;
 	
 	public function new(X:Int, Y:Int):Void
 	{
 		_x = X;
 		_y = Y;
 		_temp = 1;
-		//_curColor = FlxRandom.intRanged(0, Magma.COLORS_MAGMA.length - 1);
+		_ageSinceLastMove = 0;
 	}
 	
 	function get_x():Int 
@@ -55,18 +54,22 @@ class MagmaParticle
 	
 	public var temp(get_temp, set_temp):Float;
 	
-	/*function get_curColor():Int 
+	function get_ageSinceLastMove():Float 
 	{
-		return _curColor;
+		return _ageSinceLastMove;
 	}
 	
-	public var curColor(get_curColor, null):Int;*/
-	
+	public var ageSinceLastMove(get_ageSinceLastMove, null):Float;
 	
 	public function update():Void
 	{
-		//_curColor++;
-		//_curColor %= Magma.COLORS_MAGMA.length - 1;
+		_ageSinceLastMove += FlxG.elapsed;
+		
+	}
+	
+	public function justMoved():Void
+	{
+		_ageSinceLastMove = 0;
 	}
 	
 }

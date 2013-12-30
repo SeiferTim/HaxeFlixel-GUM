@@ -1,8 +1,10 @@
 package elements;
 import flash.display.BitmapData;
+import flash.geom.Rectangle;
 import flixel.FlxSprite;
 import flixel.util.FlxGradient;
 import flixel.util.FlxRandom;
+import flixel.util.FlxRect;
 
 class DwarfHouse extends FlxSprite
 {
@@ -14,6 +16,7 @@ class DwarfHouse extends FlxSprite
 	private var _owned:Bool;
 	private var _birthing:Bool;
 	private var _delay:Float;
+	private var _rect:FlxRect;
 	
 	public function new(W:World, X:Int, Y:Int) 
 	{
@@ -28,6 +31,7 @@ class DwarfHouse extends FlxSprite
 		height = 5;
 		x = X - 3;
 		y = Y - 3;
+		_rect = new FlxRect(x, y, width, height);
 		_owned = false;
 		_birthing = false;
 		_delay = 0;
@@ -92,5 +96,12 @@ class DwarfHouse extends FlxSprite
 	}
 	
 	public var birthing(get_birthing, set_birthing):Bool;
+	
+	function get_rect():FlxRect 
+	{
+		return _rect;
+	}
+	
+	public var rect(get_rect, null):FlxRect;
 	
 }

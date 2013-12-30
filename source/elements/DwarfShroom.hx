@@ -1,5 +1,6 @@
 package elements;
 import flash.display.BitmapData;
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxRandom;
 import flixel.util.FlxRect;
@@ -16,7 +17,7 @@ class DwarfShroom extends FlxSprite
 	public inline static var STATUS_GROWING:Int = 3;
 	
 	private var _status:Int = 0;
-	private var _age:Int = 0;
+	private var _age:Float = 0;
 	private var _rect:FlxRect;
 	private var _w:World;
 	
@@ -71,8 +72,8 @@ class DwarfShroom extends FlxSprite
 	{
 		if (_status == STATUS_GROWING)
 		{
-			_age += FlxRandom.intRanged(0, 1);
-			if (FlxRandom.chanceRoll(_age))
+			_age += FlxG.elapsed * FlxRandom.intRanged(0, 2);
+			if (FlxRandom.chanceRoll(Math.floor(_age/100)))
 			{
 				Grow();
 			}

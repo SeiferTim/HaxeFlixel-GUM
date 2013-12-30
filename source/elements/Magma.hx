@@ -67,6 +67,11 @@ class Magma
 			
 	}
 	
+	private function isEmpty(BMD:BitmapData, X:Int, Y:Int):Bool
+	{
+		return !CheckMPos(BMD, X, Y) && !_w.isSolid( X, Y);
+	}
+	
 	public function update():Void
 	{
 
@@ -74,13 +79,20 @@ class Magma
 		var dirChoice:Array<Int>;
 		var loops:Int = 0;
 		var moved:Bool = false;
+		var down:Bool = false;
+		
+		var None:Int = 0;
+		var L:Int = 1;
+		var R:Int = 2;
+		var DL:Int = 3;
+		var DR:Int = 4;
 
 		_m.sort(ParticleSort);
 		
 		for (mP in _m)
 		{		
 			moved = false;
-			if (!CheckMPos(work, mP.x, mP.y + 1) && !_w.isSolid( mP.x + 0, mP.y + 1))
+			if (isEmpty(work, mP.x, mP.y + 1))
 			{
 				moved = true;
 				erasePx(work, mP.x, mP.y);
@@ -91,47 +103,52 @@ class Magma
 			{
 				dirChoice = new Array();
 				
-				if (CheckMPos(work, mP.x, mP.y - 1) || (CheckMPos(work, mP.x - 1 , mP.y - 1) && CheckMPos(work, mP.x - 1, mP.y)) || (CheckMPos(work, mP.x + 1 , mP.y - 1) && CheckMPos(work, mP.x + 1, mP.y)))
+				if (isEmpty(work, mP.x - 1, mP.y) && isEmpty(work, mP.x - 1, mP.y + 1))
+					dirChoice.push(DL);
+				
+				if (isEmpty(work, mP.x + 1, mP.y) && isEmpty(work, mP.x + 1, mP.y + 1))
+					dirChoice.push(DR);
+					
+				if (isEmpty(work, mP.x - 1, mP.y) && !isEmpty(work, mP.x + 1, mP.y))
+					dirChoice.push(L);
+					
+				if (isEmpty(work, mP.x + 1, mP.y) && !isEmpty(work, mP.x - 1, mP.y))
+					dirChoice.push(R);
+					
+				if (dirChoice.length > 0)
 				{
 					
-					if (!CheckMPos(work, mP.x - 1, mP.y) && !_w.isSolid(mP.x - 1, mP.y))
-						dirChoice.push( -1);
-					
-					if (!CheckMPos(work, mP.x + 1, mP.y) && !_w.isSolid(mP.x + 1, mP.y))
-						dirChoice.push(1);
-						
-					if (dirChoice.length > 0)
-					{
-						
-						moved = true;
-						erasePx(work, mP.x, mP.y);
-						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-					}
-				}
-				else
-				{
-					if (!CheckMPos(_mSpr.pixels, mP.x - 1, mP.y +1 ) && !_w.isSolid(mP.x - 1, mP.y +1))
-						dirChoice.push( -1);
-					
-					if (!CheckMPos(_mSpr.pixels, mP.x + 1, mP.y + 1) && !_w.isSolid(mP.x + 1, mP.y + 1))
-						dirChoice.push(1);
-						
-					if (dirChoice.length > 0)
-					{
-						moved = true;
-						erasePx(work, mP.x, mP.y);
+					moved = true;
+					erasePx(work, mP.x, mP.y);
+					var choice:Int = dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
+					if (choice == DR || choice == DL)
 						mP.y++;
-						mP.x += dirChoice[FlxRandom.intRanged(0, dirChoice.length - 1)];
-						
-					}
-					
-						
+					if (choice == L || choice == DL)
+						mP.x--
+					else if (choice == R || choice == DR)
+						mP.x++;
 				}
 				
 			}
-			if (CheckOkay(mP) && moved)
+			if (CheckOkay(mP))
 			{
-				drawPx(work, mP.x, mP.y);
+				if (moved)
+				{
+					mP.justMoved();
+					drawPx(work, mP.x, mP.y);
+				}
+				else
+				{
+					if (FlxRandom.chanceRoll(Math.floor(mP.ageSinceLastMove*CountEmpties(work,mP.x,mP.y))))
+					{
+						trace('stone!');
+						erasePx(work, mP.x, mP.y);
+						_w.ground.drawStone(mP.x, mP.y);
+						_m.remove(mP);
+						
+					}
+				}
+				
 			}
 		}
 		
@@ -142,9 +159,20 @@ class Magma
 		work.dispose();
 		_mSpr.dirty = true;
 		_mSpr.resetFrameBitmapDatas();
-		
-		
-		
+	}
+	
+	private function CountEmpties(BMD:BitmapData, X:Int, Y:Int):Int
+	{
+		var c:Int=0;
+		if (!CheckMPos(BMD, X - 1, Y - 1)) c++;
+		if (!CheckMPos(BMD, X, Y - 1)) c++;
+		if (!CheckMPos(BMD, X + 1, Y - 1)) c++;
+		if (!CheckMPos(BMD, X - 1, Y)) c++;
+		if (!CheckMPos(BMD, X + 1, Y)) c++;
+		if (!CheckMPos(BMD, X - 1, Y + 1)) c++;
+		if (!CheckMPos(BMD, X , Y + 1)) c++;
+		if (!CheckMPos(BMD, X - 1, Y + 1)) c++;
+		return c;
 	}
 	
 	public function spawnMagma(X:Int, Y:Int):Void

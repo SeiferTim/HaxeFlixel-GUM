@@ -25,6 +25,7 @@ class Dwarf
 	public inline static var ACT_BIRTH:Int = 7;
 	public inline static var ACT_MINE:Int = 8;
 	public inline static var ACT_PLANT:Int = 9;
+	public inline static var ACT_HARVEST:Int = 10;
 	
 	private inline static var DIR_DOWN:Int = 0;
 	private inline static var DIR_UP:Int = 1;
@@ -54,7 +55,7 @@ class Dwarf
 	private var _startedRoom:Bool;
 	private var _targetPos:FlxPoint;
 	private var _shroom:DwarfShroom;
-	
+	private var _alive:Bool;
 	
 	
 	public function new(W:World) 
@@ -79,7 +80,7 @@ class Dwarf
 		_room = null;
 		_startedRoom = false;
 		_shroom = null;
-		
+		_alive = true;
 		return this;
 		
 	}
@@ -100,7 +101,20 @@ class Dwarf
 		}
 		
 		if (_life <= 0)
+		{
+			if (_alive)
+			{
+				_alive = false;
+				if (_home != null)
+					_home.owned = false;
+				_home = null;
+				_room = null;
+				_startedRoom = false;
+				_shroom = null;
+				
+			}
 			return;
+		}
 		
 		if (_sinceBirth > 0)
 			_sinceBirth--;
@@ -129,6 +143,8 @@ class Dwarf
 					MineTunnel();
 				case ACT_PLANT:
 					PlantCrops();
+				case ACT_HARVEST:
+					Harvest();
 			}
 		}
 		else
@@ -191,46 +207,71 @@ class Dwarf
 					if (_pos.y < FlxG.height - 10 && !_w.isSolid(Std.int(_pos.x), Std.int(_pos.y + 1)))
 						acts.push(ACT_WALKDOWN);
 						
-					if (_home == null && _w.dwarfOre > 150)
+					if ((_home == null && _w.dwarfOre > 150) || _w.dwarfOre > _w.dwarfPop * 150)
 					{
-						var tmpS:FlxSprite = new FlxSprite(_pos.x - 3, _pos.y - 3).makeGraphic(7, 7, 0xFF000000,true);
-						if (!FlxG.overlap(_w.lyrDHouses, tmpS) && !FlxCollision.pixelPerfectCheck(tmpS, _w.lyrMagma, 200))
-							acts.push(ACT_BUILD);
-						tmpS.kill();
+						//var tmpS:FlxSprite = new FlxSprite(_pos.x - 3, _pos.y - 3).makeGraphic(7, 7, 0xFF000000,true);
+						//if (!FlxG.overlap(_w.lyrDHouses, tmpS) && !FlxCollision.pixelPerfectCheck(tmpS, _w.lyrMagma, 200))
+						acts.push(ACT_BUILD);
+						//tmpS.kill();
 					}
 					
-					if (_female && _home != null && _sinceBirth <=0 && _w.dwarfFood >= 15)
+					
+					if (_female && _sinceBirth <=0 && _w.dwarfFood >= 15)
 					{
-						acts.push(ACT_BIRTH);
+						if ( _home != null)
+							acts.push(ACT_BIRTH);
+						else if (_w.dwarfOre > 150)
+							acts.push(ACT_BUILD);
 					}
 				}
 				
 				if (_w.dwarfFood < _w.dwarfPop * 200)
 				{
+					
+					if (_w.lyrShrooms.countLiving() > 100)
+					{
+						acts.push(ACT_HARVEST);
+						acts.push(ACT_HARVEST);
+					}
 					acts.push(ACT_PLANT);
+					acts.push(ACT_PLANT);
+					
 				}
 				if (_w.dwarfFood < _w.dwarfPop * 100)
 				{
+					if (_w.lyrShrooms.countLiving() > 10)
+					{
+						acts.push(ACT_HARVEST);
+						acts.push(ACT_HARVEST);
+					}
 					acts.push(ACT_PLANT);
+					acts.push(ACT_PLANT);
+					
 				}
 				if (_w.dwarfFood < _w.dwarfPop * 50)
 				{
+					if (_w.lyrShrooms.countLiving() > 1)
+					{
+						acts.push(ACT_HARVEST);
+						acts.push(ACT_HARVEST);
+					}
 					acts.push(ACT_PLANT);
+					acts.push(ACT_PLANT);
+					
+					
 				}
 				acts.push(ACT_PLANT);
+				if (_w.lyrShrooms.countLiving() > 1)
+				{
+					acts.push(ACT_HARVEST);
+				}
 				
 				_action = acts[FlxRandom.intRanged(0, acts.length-1)];
 				
 				switch(_action)
 				{
 					case ACT_BUILD:
-						var h:DwarfHouse = new DwarfHouse(_w, Std.int(_pos.x), Std.int(_pos.y));
-						_w.dHouses.push(h);
-						_w.lyrDHouses.add(h);
-						_building = h;
-						_home = h;
-						h.owned = true;
-						_w.dwarfOre-= 150;
+						
 					case ACT_MINE:
 						if (!_underground)
 						{
@@ -373,20 +414,148 @@ class Dwarf
 	
 	private function BuildHouse():Void
 	{
-		if (_building == null)
+		
+		if (_room == null)
 		{
-			_action = -1;
-			return;
+			_targetPos = null;
+			for (r in _w.dwarfRooms)
+			{
+				if (r.roomtype == DwarfRoom.TYPE_HOUSING && !r.full)
+				{
+					_room = r;
+				}
+			}
 		}
-		if (_building.health <= 25)
+		if (_room == null)
 		{
-			_building.build(FlxRandom.intRanged(0, 3));
+			_building = null;
+			_room = null;
+			_targetPos = null;
+			_action = -1;
 		}
 		else
 		{
-			_building = null;
-			_action = -1;
+			if (_targetPos == null)
+			{
+				var check:FlxPoint = new FlxPoint(_room.rect.x + 2, _room.rect.y + 2);
+				var foundSpot:Bool = false;
+				var anyOverlap:Bool = false;
+				while (check.y < _w.ground.points[Std.int(check.x)])
+					check.y += 5;
+				while (check.x < _room.rect.right - 2 && check.y < _room.rect.bottom)
+				{
+					for (d in _w.lyrDHouses.members)
+					{
+						var s:DwarfHouse = cast d;
+						if (s.alive && s.exists && _room.rect.overlaps(s.rect) && s.overlapsPoint(check))
+						{
+							anyOverlap = true;
+							break;
+						}
+					}
+					
+					if (!anyOverlap && check.y > _w.ground.points[Std.int(check.x)]) 
+					{
+						_targetPos = new FlxPoint(check.x, check.y);
+						
+						check.x = _room.rect.right;
+						check.y = _room.rect.bottom;
+						foundSpot = true;
+					}
+					else
+					{
+						anyOverlap = false;
+						check.x += 5;
+						if (check.x > _room.rect.right - 2)
+						{
+							check.x = _room.rect.x + 2;
+							check.y += 5;
+							while (check.y < _w.ground.points[Std.int(check.x)])
+							{
+								check.x = _room.rect.x + 2;
+								check.y += 5;
+							}
+						}
+					}
+				}
+				if (!foundSpot)
+				{
+					_room.full = true;
+					_building = null;
+					_room = null;
+					_targetPos = null;
+					_action = -1;
+				}
+				else
+				{
+					//trace('found spot!');
+					var h:DwarfHouse = new DwarfHouse(_w, Std.int(_targetPos.x), Std.int(_targetPos.y));
+					_w.dHouses.push(h);
+					_w.lyrDHouses.add(h);
+					_building = h;
+					_home = h;
+					h.owned = true;
+					_w.dwarfOre-= 150;
+					
+					
+				}
+			}
+			else
+			{
+				if (_pos.x != _targetPos.x || _pos.y != _targetPos.y)
+				{
+					
+					var dX:Int = Std.int(_targetPos.x);
+					var dY:Int = Std.int(_targetPos.y);
+					
+					
+					if (Math.abs(_pos.y - dY) > Math.abs(_pos.x - dX))
+					{
+						if (_pos.y > dY)
+						{
+							
+							Walk(DIR_UP);
+						}
+						else
+						{
+							
+							Walk(DIR_DOWN);
+						}
+					}
+					else
+					{
+						if (_pos.x > dX)
+						{
+							
+							Walk(DIR_LEFT);
+						}
+						else
+						{
+							
+							Walk(DIR_RIGHT);
+						}
+						
+						
+						
+					}
+				}
+				else
+				{
+					if (_building.health <= 25)
+					{
+						_building.build(FlxRandom.intRanged(0, 3));
+					}
+					else
+					{
+						_building = null;
+						_room = null;
+						_targetPos = null;
+						_action = -1;
+					}
+				}
+			}
 		}
+		
 		
 	}
 	
@@ -742,6 +911,9 @@ class Dwarf
 		}
 		if (_room == null)
 		{
+			_shroom = null;
+			_room = null;
+			_targetPos = null;
 			_action = -1;
 		}
 		else
@@ -751,19 +923,22 @@ class Dwarf
 				var check:FlxPoint = new FlxPoint(_room.rect.x + 1, _room.rect.y + 3);
 				var foundSpot:Bool = false;
 				var anyOverlap:Bool = false;
+				while (check.y < _w.ground.points[Std.int(check.x)])
+					check.y += 4;
 				while (check.x < _room.rect.right - 1 && check.y < _room.rect.bottom)
 				{
+					
 					for (d in _w.lyrShrooms.members)
 					{
 						var s:DwarfShroom = cast d;
-						if (s.alive && s.exists &&  _room.rect.overlaps(s.rect) && s.overlapsPoint(check))
+						if (s.alive && s.exists && _room.rect.overlaps(s.rect) && s.overlapsPoint(check))
 						{
 							anyOverlap = true;
 							break;
 						}
 					}
 					
-					if (!anyOverlap)
+					if (!anyOverlap && check.y > _w.ground.points[Std.int(check.x)])
 					{
 						_targetPos = new FlxPoint(check.x, check.y);
 						
@@ -773,27 +948,42 @@ class Dwarf
 					}
 					else
 					{
+						anyOverlap = false;
 						check.x += 3;
 						if (check.x > _room.rect.right - 1)
+						{
+							check.x = _room.rect.x + 1;
 							check.y += 4;
+							while (check.y < _w.ground.points[Std.int(check.x)])
+							{
+								check.x = _room.rect.x + 1;
+								check.y += 4;
+							}
+						}
 					}
 				}
 				if (!foundSpot)
 				{
 					_room.full = true;
 					_room = null;
+					_targetPos = null;
+					_shroom = null;
 					_action = -1;
 				}
 				else
 				{
-					trace('found spot!');
-					var s:DwarfShroom = cast _w.lyrShrooms.recycle(DwarfShroom, [_w]);
-					if (s != null)
+					
+					var s:DwarfShroom = cast _w.lyrShrooms.recycle(DwarfShroom, [_w], true);
+					if (s == null)
 					{
-						s.reset(_pos.x - 1, _pos.y - 3);
-						s.visible = false;
-						_shroom = s;
+						s = new DwarfShroom(_w);
+						_w.lyrShrooms.add(s);
 					}
+					
+					s.reset(_targetPos.x - 1, _targetPos.y - 3);
+					s.visible = false;
+					_shroom = s;
+				
 					
 				}
 			}
@@ -810,20 +1000,12 @@ class Dwarf
 					{
 						if (_pos.y > dY)
 						{
-							if (_w.isSolid(Std.int(_pos.x), Std.int(_pos.y - 1)))
-							{
-								_w.MakeCave(Std.int(_pos.x), Std.int(_pos.y - 1), World.CORIENT_P);
-								_w.giveDOre();
-							}
+							
 							Walk(DIR_UP);
 						}
 						else
 						{
-							if (_w.isSolid(Std.int(_pos.x), Std.int(_pos.y + 1)))
-							{
-								_w.MakeCave(Std.int(_pos.x), Std.int(_pos.y + 1), World.CORIENT_P);
-								_w.giveDOre();
-							}
+							
 							Walk(DIR_DOWN);
 						}
 					}
@@ -831,20 +1013,12 @@ class Dwarf
 					{
 						if (_pos.x > dX)
 						{
-							if (_w.isSolid(Std.int(_pos.x - 1), Std.int(_pos.y)))
-							{
-								_w.MakeCave(Std.int(_pos.x - 1), Std.int(_pos.y) , World.CORIENT_P);
-								_w.giveDOre();
-							}
+							
 							Walk(DIR_LEFT);
 						}
 						else
 						{
-							if (_w.isSolid(Std.int(_pos.x + 1), Std.int(_pos.y)))
-							{
-								_w.MakeCave(Std.int(_pos.x + 1), Std.int(_pos.y), World.CORIENT_P);
-								_w.giveDOre();
-							}
+							
 							Walk(DIR_RIGHT);
 						}
 						
@@ -854,7 +1028,7 @@ class Dwarf
 				}
 				else
 				{
-					trace('planted!');
+					//trace('planted!');
 					_shroom.visible = true;
 					_shroom = null;
 					_room = null;
@@ -865,6 +1039,99 @@ class Dwarf
 		}
 	}
 
+	private function Harvest():Void
+	{
+		if (_shroom == null)
+		{
+			var sh:DwarfShroom;
+			for (s in _w.lyrShrooms.members)
+			{
+				sh = cast s;
+				if (sh.alive && sh.status == DwarfShroom.STATUS_NORMAL)
+				{
+					_shroom = sh;
+					_targetPos = new FlxPoint(_shroom.x + 1, _shroom.y + 3);
+					_shroom.status = DwarfShroom.STATUS_CUTTING;
+					break;
+					
+				}
+			}
+			if (_shroom == null)
+			{
+				_shroom = null;
+				_targetPos = null;
+				_action = ACT_PLANT;
+				
+			}
+		}
+		else
+		{
+			if (_pos.x != _targetPos.x || _pos.y != _targetPos.y)
+			{
+				
+				var dX:Int = Std.int(_targetPos.x);
+				var dY:Int = Std.int(_targetPos.y);
+				
+				
+				if (Math.abs(_pos.y - dY) > Math.abs(_pos.x - dX))
+				{
+					if (_pos.y > dY)
+					{
+						if (_w.isSolid(Std.int(_pos.x), Std.int(_pos.y - 1)))
+						{
+							_w.MakeCave(Std.int(_pos.x), Std.int(_pos.y - 1), World.CORIENT_P);
+							_w.giveDOre();
+						}
+						Walk(DIR_UP);
+					}
+					else
+					{
+						if (_w.isSolid(Std.int(_pos.x), Std.int(_pos.y + 1)))
+						{
+							_w.MakeCave(Std.int(_pos.x), Std.int(_pos.y + 1), World.CORIENT_P);
+							_w.giveDOre();
+						}
+						Walk(DIR_DOWN);
+					}
+				}
+				else
+				{
+					if (_pos.x > dX)
+					{
+						if (_w.isSolid(Std.int(_pos.x - 1), Std.int(_pos.y)))
+						{
+							_w.MakeCave(Std.int(_pos.x - 1), Std.int(_pos.y) , World.CORIENT_P);
+							_w.giveDOre();
+						}
+						Walk(DIR_LEFT);
+					}
+					else
+					{
+						if (_w.isSolid(Std.int(_pos.x + 1), Std.int(_pos.y)))
+						{
+							_w.MakeCave(Std.int(_pos.x + 1), Std.int(_pos.y), World.CORIENT_P);
+							_w.giveDOre();
+						}
+						Walk(DIR_RIGHT);
+					}
+					
+					
+					
+				}
+			}
+			else
+			{
+				_shroom.status = DwarfShroom.STATUS_CUTDOWN;
+				_shroom.kill();
+				_w.dwarfFood += 100;
+				
+				_shroom = null;
+				_targetPos = null;
+				_action = -1;
+			}
+		}
+	}
+	
 	function NoCheck(D:Dynamic):Void
 	{
 		
@@ -904,5 +1171,17 @@ class Dwarf
 	}
 	
 	public var atHome(get_atHome, null):Bool;
+	
+	function get_alive():Bool 
+	{
+		return _alive;
+	}
+	
+	function set_alive(value:Bool):Bool 
+	{
+		return _alive = value;
+	}
+	
+	public var alive(get_alive, set_alive):Bool;
 	
 }
