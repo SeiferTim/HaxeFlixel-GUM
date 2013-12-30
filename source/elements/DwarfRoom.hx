@@ -8,6 +8,7 @@ class DwarfRoom
 	static public inline var TYPE_HOUSING:Int = 0;
 	static public inline var TYPE_FARM:Int = 1;
 	static public inline var TYPE_STORAGE:Int = 2;
+	static public inline var TYPE_MSPRING:Int = 3;
 	
 	private var _rect:FlxRect;
 	private var _roomtype:Int;

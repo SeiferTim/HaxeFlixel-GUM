@@ -67,7 +67,7 @@ class Magma
 			
 	}
 	
-	private function isEmpty(BMD:BitmapData, X:Int, Y:Int):Bool
+	public function isEmpty(BMD:BitmapData, X:Int, Y:Int):Bool
 	{
 		return !CheckMPos(BMD, X, Y) && !_w.isSolid( X, Y);
 	}
@@ -86,6 +86,7 @@ class Magma
 		var R:Int = 2;
 		var DL:Int = 3;
 		var DR:Int = 4;
+		var D:Int = 5;
 
 		_m.sort(ParticleSort);
 		
@@ -141,10 +142,32 @@ class Magma
 				{
 					if (FlxRandom.chanceRoll(Math.floor(mP.ageSinceLastMove*CountEmpties(work,mP.x,mP.y))))
 					{
-						trace('stone!');
+						//trace('stone!');
 						erasePx(work, mP.x, mP.y);
 						_w.ground.drawStone(mP.x, mP.y);
 						_m.remove(mP);
+						
+					}
+					else 
+					{
+						
+						dirChoice = new Array();
+						if (_w.isSolid(mP.x, mP.y + 1))
+							dirChoice.push(D);
+						if (_w.isSolid(mP.x - 1, mP.y))
+							dirChoice.push(L);
+						if (_w.isSolid(mP.x+1, mP.y))
+							dirChoice.push(R);
+						if (dirChoice.length > 0)
+						{
+							if (FlxRandom.chanceRoll(1) && FlxRandom.chanceRoll(1))
+							{
+								erasePx(work, mP.x, mP.y);
+								_w.MakeCave(mP.x, mP.y, World.CORIENT_P);
+								_m.remove(mP);
+							}
+						}
+						
 						
 					}
 				}

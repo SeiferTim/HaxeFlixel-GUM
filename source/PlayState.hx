@@ -134,6 +134,7 @@ class PlayState extends FlxState
 				add(_world.ground.groundMap);
 				add(_world.lyrTrees);
 				add(_world.caves);
+				add(_world.lyrMSprings);
 				add(_world.lyrMagma);
 				add(_world.lyrFX);
 				add(_world.lyrHouses);

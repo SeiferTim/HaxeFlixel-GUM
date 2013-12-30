@@ -601,7 +601,7 @@ class Dwarf
 			
 			if (bX1 != bX2 && bY1 != bY2)
 			{
-				_room = new DwarfRoom(FlxRandom.intRanged(bX1, bX2), FlxRandom.intRanged(bY1, bY2), FlxRandom.intRanged(3, 8) * 5, FlxRandom.intRanged(1, 4) * 5, FlxRandom.intRanged(0,2));
+				_room = new DwarfRoom(FlxRandom.intRanged(bX1, bX2), FlxRandom.intRanged(bY1, bY2), FlxRandom.intRanged(3, 8) * 5, FlxRandom.intRanged(1, 4) * 5, FlxRandom.intRanged(0,3));
 				_room.rect.x = Std.int(_room.rect.x);
 				_room.rect.y = Std.int(_room.rect.y);
 				_room.rect.width = Std.int(_room.rect.width);
@@ -609,6 +609,12 @@ class Dwarf
 				_room.rect.y += 10 - (_room.rect.y % 10);
 				
 				/// if the room overlaps another room, abort
+				
+				if (_room.roomtype == DwarfRoom.TYPE_MSPRING)
+				{
+					_w.lyrMSprings.add(new MagmaSpring(_w, FlxRandom.intRanged(Std.int(_room.rect.x + 2), Std.int(_room.rect.right - 2)), FlxRandom.intRanged(Std.int(_room.rect.y +2), Std.int(_room.rect.bottom - 2))));
+					
+				}
 				
 				var bad:Bool = false;
 				var tmp:FlxRect = new FlxRect(_room.rect.x - 2, _room.rect.y - 2, _room.rect.width + 4, _room.rect.height + 4);
