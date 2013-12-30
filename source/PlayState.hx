@@ -138,6 +138,7 @@ class PlayState extends FlxState
 				add(_world.lyrFX);
 				add(_world.lyrHouses);
 				add(_world.lyrDHouses);
+				add(_world.lyrShrooms);
 				add(_world.lyrGuys);
 				add(_world.lyrDwarfs);
 				

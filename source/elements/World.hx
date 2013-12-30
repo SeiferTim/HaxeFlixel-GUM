@@ -43,7 +43,8 @@ class World
 	private var _lyrDwarfs:FlxSprite;
 	private var _lyrMagma:FlxSprite;
 	private var _dRooms:FlxSprite;
-	
+	private var _lyrShrooms:FlxGroup;
+	private var _dwarfRooms:Array<DwarfRoom>;
 	
 	private var COLOR_CMID:Array<Int>;
 	private var COLOR_DIRT:Array<Int>;
@@ -77,8 +78,10 @@ class World
 		_lyrTrees = new FlxGroup();
 		_lyrGuys = new FlxSprite();
 		_lyrDwarfs = new FlxSprite();
+		_lyrShrooms = new FlxGroup();
 		_sky = new FlxSprite();
 		_dRooms = new FlxSprite();
+		_dwarfRooms = new Array<DwarfRoom>();
 		_magma = new Magma(this);
 		_lyrMagma = _magma.mSpr;
 		_dwarfFood = 2000;
@@ -421,7 +424,7 @@ class World
 		_dRooms.dirty = true;
 		_dRooms.resetFrameBitmapDatas();
 		
-		for (dC in 0...4)
+		for (dC in 0...FlxRandom.intRanged(5,15))
 		{
 			SpawnDwarf(Std.int(dX + (dW / 2)), Std.int(dY + dH - 1));
 		}
@@ -783,5 +786,19 @@ class World
 	}
 	
 	public var dwarfPop(get_dwarfPop, null):Int;
+	
+	function get_dwarfRooms():Array<DwarfRoom> 
+	{
+		return _dwarfRooms;
+	}
+	
+	public var dwarfRooms(get_dwarfRooms, null):Array<DwarfRoom>;
+	
+	function get_lyrShrooms():FlxGroup 
+	{
+		return _lyrShrooms;
+	}
+	
+	public var lyrShrooms(get_lyrShrooms, null):FlxGroup;
 	
 }
