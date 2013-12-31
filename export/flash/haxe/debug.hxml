@@ -5,7 +5,7 @@
 -cp source
 -D FLX_NO_FOCUS_LOST_SCREEN
 -D tools=1.2.5
--D fdb
+-D FLX_NO_DEBUG
 -D web
 -D swf-script-timeout 60
 -swf-version 11.2

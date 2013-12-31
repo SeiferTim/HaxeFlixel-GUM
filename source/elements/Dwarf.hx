@@ -612,7 +612,7 @@ class Dwarf
 				
 				if (_room.roomtype == DwarfRoom.TYPE_MSPRING)
 				{
-					_w.lyrMSprings.add(new MagmaSpring(_w, FlxRandom.intRanged(Std.int(_room.rect.x + 2), Std.int(_room.rect.right - 2)), FlxRandom.intRanged(Std.int(_room.rect.y +2), Std.int(_room.rect.bottom - 2))));
+					_w.lyrMSprings.add(new Spring(_w, FlxRandom.intRanged(Std.int(_room.rect.x + 2), Std.int(_room.rect.right - 2)), FlxRandom.intRanged(Std.int(_room.rect.y +2), Std.int(_room.rect.bottom - 2))));
 					
 				}
 				

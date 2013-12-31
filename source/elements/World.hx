@@ -26,6 +26,8 @@ class World
 	
 	private var _ground:Ground;
 	private var _magma:Magma;
+	private var _water:Water;
+	private var _steam:Steam;
 	
 	private var _guys:Array<Guy>;
 	private var _dwarfs:Array<Dwarf>;
@@ -46,9 +48,12 @@ class World
 	private var _lyrShrooms:FlxGroup;
 	private var _dwarfRooms:Array<DwarfRoom>;
 	private var _lyrMSprings:FlxGroup;
+	private var _lyrWater:FlxSprite;
+	private var _lyrSteam:FlxSprite;
 	
 	private var COLOR_CMID:Array<Int>;
 	private var COLOR_DIRT:Array<Int>;
+	private var COLOR_DWARFCAVE:Array<Int>;
 	
 	private var _humanWood:Int;
 	private var _humanFood:Int;
@@ -69,6 +74,7 @@ class World
 		
 		COLOR_CMID = FlxGradient.createGradientArray(20, 20, [0x990F0E0C, 0x99241E0E], 1, 90);
 		COLOR_DIRT = FlxGradient.createGradientArray(20, 20, [0xFF4F3710, 0xFF362914], 1, 90);
+		COLOR_DWARFCAVE = FlxGradient.createGradientArray(20, 20, [0xFF7b7532, 0xFF976c20], 1, 90);
 		
 		_humanWood = 0;
 		_humanFood = 2000;
@@ -84,8 +90,12 @@ class World
 		_dRooms = new FlxSprite();
 		_dwarfRooms = new Array<DwarfRoom>();
 		_magma = new Magma(this);
+		_water = new Water(this);
+		_steam = new Steam(this);
 		_lyrMSprings = new FlxGroup();
-		_lyrMagma = _magma.mSpr;
+		_lyrMagma = _magma.fSpr;
+		_lyrWater = _water.fSpr;
+		_lyrSteam = _steam.fSpr;
 		_dwarfFood = 2000;
 		_dwarfOre = 0;
 
@@ -143,12 +153,13 @@ class World
 		updateDwarfs();
 		updateGuys();
 		_magma.update();
+		_water.update();
+		_steam.update();
 	}
 	
 	public function MakeGround():Void
 	{
 		_ground = new Ground(_gs);
-		
 		_ground.GenerateGround();
 	}
 	
@@ -174,56 +185,12 @@ class World
 		_caves.dirty = true;
 		var cX:Int;
 		var cY:Int;
-		/*
-		var rX:Int;
-		var rY:Int;
-		var hasM:Bool;
-		var checks:Int;
-		var dirX:Int;
-		var dirY:Int;
-		var chanceX:Int;
-		var chanceY:Int;
 		
-		for (cCnt in 0...FlxRandom.intRanged(10, 100))
-		{
-			cX = FlxRandom.intRanged(0,FlxG.width);
-			cY = FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10);
-			
-			rX = cX;
-			rY = cY;
-			
-			hasM = FlxRandom.chanceRoll(Std.int(((rY / 2) / FlxG.height) * 100));
-			
-			for (cT in 0...FlxRandom.intRanged(200, 400))
-			{
-				MakeCave(rX, rY, CORIENT_P);
-				if (hasM && FlxRandom.chanceRoll())
-				{
-					_magma.spawnMagma(rX, rY);
-				}
-				
-				checks = 0;
-				while (!isSolid(rX, rY) && checks < 100)
-				{
-					checks++;
-					if (FlxRandom.chanceRoll(10))
-					{
-						rX = cX;
-						rY = cY;
-					}
-					if (FlxRandom.chanceRoll())
-						rX += Std.int(FlxRandom.sign());
-					else
-						rY += Std.int(FlxRandom.sign());
-				}
-			}
-		}
-		*/
 		
 		GenerateNoiseCaves();
 		
 		var c:BitmapData = _caves.pixels.clone();
-		for (cCnt in 0...3)//FlxRandom.intRanged(2, 10))
+		for (cCnt in 0...3)
 		{
 			cX = FlxRandom.intRanged(0, FlxG.width);
 			c = drawCaveCrack(c, cX, FlxRandom.intRanged(_ground.points[cX] + 10, FlxG.height -10));
@@ -233,13 +200,55 @@ class World
 		_caves.pixels = c.clone();
 		c.dispose();
 		AddMagma();
-		
-		//var anyMoved:Bool = true;
-		
-		//while (anyMoved)
-		//	anyMoved = _magma.update();
 		_magma.update();
+		AddWater();
+		_water.update();
 		_caves.resetFrameBitmapDatas();
+	}
+	
+	private function AddWater():Void 
+	{
+		var noise_b:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0xffffffff, 0x60ffffff, 0x0, 0x60ffffff, 0xffffffff], 1, 0);
+		var noise_c:BitmapData = FlxGradient.createGradientBitmapData(FlxG.width, FlxG.height, [0xffffffff, 0xffffffff, 0x60ffffff, 0x00ffffff, 0x00ffffff, 0x20ffffff, 0x80ffffff, 0xffffffff,0xffffffff]);
+		var noise_d:BitmapData = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		noise_d.noise(FlxRandom.int(), 0, 255, BitmapDataChannel.ALPHA, true);
+		noise_b.merge(noise_c, noise_c.rect, new Point(), 0, 0, 0, 63);
+		noise_b.merge(noise_d, noise_d.rect, new Point(), 0, 0, 0, 63);
+		noise_b.applyFilter(noise_b, noise_b.rect, new Point(), new BlurFilter());
+		var noise:BitmapData;
+		noise = new BitmapData(FlxG.width, FlxG.height, true, 0x0);
+		var size:Int = FlxRandom.intRanged(2, 4);
+		noise.perlinNoise(FlxG.width/size, FlxG.height/size, FlxRandom.intRanged(4,8), FlxRandom.int(), false, false,  BitmapDataChannel.ALPHA, true);
+		noise.merge(noise_b, noise_b.rect, new Point(), 0, 0, 0, 30);
+		
+		for (nX in 0...noise.width)
+		{
+			for (nY in _ground.points[nX]...noise.height)
+			{
+				if (!isSolid(nX,nY))
+				{
+					if (FlxColorUtil.getAlpha(noise.getPixel32(nX, nY)) > 80)
+					{
+						_water.spawnFluid(nX, nY);
+					}
+				}
+			}
+		}
+		noise_b.dispose();
+		noise_c.dispose();
+		noise_d.dispose();
+		noise.dispose();
+		
+		/*
+		var x:Int;
+		var y:Int;
+		for (v in 0...FlxRandom.intRanged(0, 20))
+		{
+			x = FlxRandom.intRanged(0, FlxG.width);
+			y = FlxRandom.intRanged(_ground.points[x], FlxG.height);
+			_lyrMSprings.add(new MagmaSpring(this, x, y));
+		}
+		*/
 	}
 	
 	private function AddMagma():Void 
@@ -263,9 +272,9 @@ class World
 			{
 				if (!isSolid(nX,nY))
 				{
-					if (FlxColorUtil.getAlpha(noise.getPixel32(nX, nY)) > 60)
+					if (FlxColorUtil.getAlpha(noise.getPixel32(nX, nY)) > 100)
 					{
-						_magma.spawnMagma(nX, nY);
+						_magma.spawnFluid(nX, nY);
 					}
 				}
 			}
@@ -282,7 +291,7 @@ class World
 		{
 			x = FlxRandom.intRanged(0, FlxG.width);
 			y = FlxRandom.intRanged(_ground.points[x], FlxG.height);
-			_lyrMSprings.add(new MagmaSpring(this, x, y));
+			_lyrMSprings.add(new Spring(this, x, y));
 		}
 		
 	}
@@ -838,5 +847,33 @@ class World
 	}
 	
 	public var lyrMSprings(get_lyrMSprings, null):FlxGroup;
+	
+	function get_water():Water 
+	{
+		return _water;
+	}
+	
+	public var water(get_water, null):Water;
+	
+	function get_lyrWater():FlxSprite 
+	{
+		return _lyrWater;
+	}
+	
+	public var lyrWater(get_lyrWater, null):FlxSprite;
+	
+	function get_lyrSteam():FlxSprite 
+	{
+		return _lyrSteam;
+	}
+	
+	public var lyrSteam(get_lyrSteam, null):FlxSprite;
+	
+	function get_steam():Steam 
+	{
+		return _steam;
+	}
+	
+	public var steam(get_steam, null):Steam;
 	
 }

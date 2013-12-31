@@ -142,6 +142,8 @@ class PlayState extends FlxState
 				add(_world.lyrShrooms);
 				add(_world.lyrGuys);
 				add(_world.lyrDwarfs);
+				add(_world.lyrWater);
+				add(_world.lyrSteam);
 				
 				add(_lyrHUD);
 				
@@ -181,6 +183,7 @@ class PlayState extends FlxState
 				add(s);*/
 				
 				_created = 100;
+				FlxG.watch.add(_world.steam.f, "length");
 		}
 	}
 	
