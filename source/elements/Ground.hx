@@ -62,10 +62,10 @@ class Ground
 		_groundMap.resetFrameBitmapDatas();
 	}
 	
-	public function GenerateGround(Seed:Float = 0):Void
+	public function GenerateGround(Seed:Int = 0):Void
 	{
 		if (Seed == 0)
-			FlxRandom.globalSeed = FlxRandom.float();
+			FlxRandom.globalSeed = FlxRandom.int();
 		else
 			FlxRandom.globalSeed = Seed;
 		

@@ -46,6 +46,8 @@ class DefaultAssetLibrary extends AssetLibrary {
 		type.set ("assets/sounds/sounds-go-here.txt", Reflect.field (AssetType, "text".toUpperCase ()));
 		className.set ("flixel/img/debugger/buttons/console.png", __ASSET__flixel_img_debugger_buttons_console_png);
 		type.set ("flixel/img/debugger/buttons/console.png", Reflect.field (AssetType, "image".toUpperCase ()));
+		className.set ("flixel/img/debugger/buttons/drawDebug.png", __ASSET__flixel_img_debugger_buttons_drawdebug_png);
+		type.set ("flixel/img/debugger/buttons/drawDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		className.set ("flixel/img/debugger/buttons/logDebug.png", __ASSET__flixel_img_debugger_buttons_logdebug_png);
 		type.set ("flixel/img/debugger/buttons/logDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		className.set ("flixel/img/debugger/buttons/open.png", __ASSET__flixel_img_debugger_buttons_open_png);
@@ -66,8 +68,6 @@ class DefaultAssetLibrary extends AssetLibrary {
 		type.set ("flixel/img/debugger/buttons/step.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		className.set ("flixel/img/debugger/buttons/stop.png", __ASSET__flixel_img_debugger_buttons_stop_png);
 		type.set ("flixel/img/debugger/buttons/stop.png", Reflect.field (AssetType, "image".toUpperCase ()));
-		className.set ("flixel/img/debugger/buttons/visualDebug.png", __ASSET__flixel_img_debugger_buttons_visualdebug_png);
-		type.set ("flixel/img/debugger/buttons/visualDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		className.set ("flixel/img/debugger/buttons/watchDebug.png", __ASSET__flixel_img_debugger_buttons_watchdebug_png);
 		type.set ("flixel/img/debugger/buttons/watchDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		className.set ("flixel/img/debugger/flixel.png", __ASSET__flixel_img_debugger_flixel_png);
@@ -138,6 +138,8 @@ class DefaultAssetLibrary extends AssetLibrary {
 		type.set ("assets/sounds/sounds-go-here.txt", Reflect.field (AssetType, "text".toUpperCase ()));
 		path.set ("flixel/img/debugger/buttons/console.png", "flixel/img/debugger/buttons/console.png");
 		type.set ("flixel/img/debugger/buttons/console.png", Reflect.field (AssetType, "image".toUpperCase ()));
+		path.set ("flixel/img/debugger/buttons/drawDebug.png", "flixel/img/debugger/buttons/drawDebug.png");
+		type.set ("flixel/img/debugger/buttons/drawDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		path.set ("flixel/img/debugger/buttons/logDebug.png", "flixel/img/debugger/buttons/logDebug.png");
 		type.set ("flixel/img/debugger/buttons/logDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		path.set ("flixel/img/debugger/buttons/open.png", "flixel/img/debugger/buttons/open.png");
@@ -158,8 +160,6 @@ class DefaultAssetLibrary extends AssetLibrary {
 		type.set ("flixel/img/debugger/buttons/step.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		path.set ("flixel/img/debugger/buttons/stop.png", "flixel/img/debugger/buttons/stop.png");
 		type.set ("flixel/img/debugger/buttons/stop.png", Reflect.field (AssetType, "image".toUpperCase ()));
-		path.set ("flixel/img/debugger/buttons/visualDebug.png", "flixel/img/debugger/buttons/visualDebug.png");
-		type.set ("flixel/img/debugger/buttons/visualDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		path.set ("flixel/img/debugger/buttons/watchDebug.png", "flixel/img/debugger/buttons/watchDebug.png");
 		type.set ("flixel/img/debugger/buttons/watchDebug.png", Reflect.field (AssetType, "image".toUpperCase ()));
 		path.set ("flixel/img/debugger/flixel.png", "flixel/img/debugger/flixel.png");
@@ -226,6 +226,8 @@ class DefaultAssetLibrary extends AssetLibrary {
 			var bytes = ByteArray.readFile ("app/native/manifest");
 			#elseif tizen
 			var bytes = ByteArray.readFile ("../res/manifest");
+			#elseif emscripten
+			var bytes = ByteArray.readFile ("assets/manifest");
 			#else
 			var bytes = ByteArray.readFile ("manifest");
 			#end
@@ -662,6 +664,7 @@ class __ASSET__assets_images_images_go_here_txt extends null { }
 class __ASSET__assets_music_music_goes_here_txt extends null { }
 class __ASSET__assets_sounds_sounds_go_here_txt extends null { }
 class __ASSET__flixel_img_debugger_buttons_console_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
+class __ASSET__flixel_img_debugger_buttons_drawdebug_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_buttons_logdebug_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_buttons_open_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_buttons_pause_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
@@ -672,7 +675,6 @@ class __ASSET__flixel_img_debugger_buttons_restart_png extends flash.display.Bit
 class __ASSET__flixel_img_debugger_buttons_statsdebug_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_buttons_step_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_buttons_stop_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
-class __ASSET__flixel_img_debugger_buttons_visualdebug_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_buttons_watchdebug_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_flixel_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
 class __ASSET__flixel_img_debugger_windowhandle_png extends flash.display.BitmapData { public function new () { super (0, 0); } }
